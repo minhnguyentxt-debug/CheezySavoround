@@ -1,7 +1,12 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\CheezySavoround\\CheezySavoround\\",
-  "Documents": [],
+  "WorkspaceRootPath": "D:\\CheezySavoround\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scrip\\newmonobehaviourscript.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scrip\\newmonobehaviourscript.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -22,6 +27,19 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NewMonoBehaviourScript.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scrip\\NewMonoBehaviourScript.cs",
+              "RelativeDocumentMoniker": "Assets\\Scrip\\NewMonoBehaviourScript.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scrip\\NewMonoBehaviourScript.cs",
+              "RelativeToolTip": "Assets\\Scrip\\NewMonoBehaviourScript.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-20T15:13:11.839Z",
+              "EditorCaption": ""
             }
           ]
         }
