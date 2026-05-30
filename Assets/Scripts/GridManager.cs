@@ -8,11 +8,11 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int columns = 4;
     [SerializeField] private int rows = 6;
     [SerializeField] private float cellSize = 3.5f;
-    [SerializeField] private float spacing = 0f;        // Đặt bằng 0 để các ô lưới khít sát lại với nhau
+    [SerializeField] private float spacing = 0f;        // Bằng 0 để các ô lưới khít sát lại với nhau
 
     [Header("Visual Checkerboard Colors")]
-    [SerializeField] private Color lightSlotColor = new Color(0.85f, 0.85f, 0.85f); // Màu ô sáng (Trắng xám nhẹ)
-    [SerializeField] private Color darkSlotColor = new Color(0.65f, 0.65f, 0.65f);  // Màu ô tối (Xám đậm)
+    [SerializeField] private Color lightSlotColor = new Color(0.85f, 0.85f, 0.85f); // Màu ô sáng
+    [SerializeField] private Color darkSlotColor = new Color(0.65f, 0.65f, 0.65f);  // Màu ô tối
 
     [Header("Prefabs")]
     [SerializeField] private GameObject slotPrefab;
@@ -35,7 +35,6 @@ public class GridManager : MonoBehaviour
         gridMatrix = new GameObject[columns, rows];
         gridPlateMatrix = new PizzaPlate[columns, rows];
 
-        // Bước nhảy chuẩn (Khi spacing = 0, step sẽ bằng đúng cellSize giúp các ô khít nhau)
         float stepX = cellSize + spacing;
         float stepZ = cellSize + spacing;
 
@@ -51,28 +50,23 @@ public class GridManager : MonoBehaviour
                 GameObject newSlot = Instantiate(slotPrefab, spawnPosition, Quaternion.identity, transform);
                 newSlot.name = $"Slot_[{x},{z}]";
 
-                // Ép kích thước ô lưới theo cellSize
                 newSlot.transform.localScale = new Vector3(cellSize, newSlot.transform.localScale.y, cellSize);
                 gridMatrix[x, z] = newSlot;
 
-                // THUẬT TOÁN: Nhuộm màu đậm nhạt so le (Bàn cờ)
+                // Nhuộm màu đậm nhạt so le (Bàn cờ)
                 Renderer slotRenderer = newSlot.GetComponentInChildren<Renderer>();
                 if (slotRenderer != null)
                 {
                     Material tempMaterial;
-
                     if (slotRenderer.sharedMaterial != null)
                     {
-                        // Nếu có material gốc, nhân bản lại từ material đó (Giữ được cả Shader lẫn các thông số cũ)
                         tempMaterial = new Material(slotRenderer.sharedMaterial);
                     }
                     else
                     {
-                        // Nếu không có, tạo mới hoàn toàn dựa trên Shader Standard mặc định
                         tempMaterial = new Material(Shader.Find("Standard"));
                     }
 
-                    // Nếu tổng tọa độ x + z là số chẵn -> màu sáng, ngược lại -> màu tối
                     if ((x + z) % 2 == 0)
                     {
                         tempMaterial.color = lightSlotColor;
@@ -86,7 +80,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
-        Debug.Log("<color=green>[GridManager] Đã khởi tạo lưới so le màu bàn cờ 4x6 khít nhau!</color>");
+        Debug.Log("<color=green>[GridManager] Đã khởi tạo lưới so le màu bàn cờ khít nhau!</color>");
     }
 
     private void LoadLevelFromJSON(int levelNumber)
@@ -151,5 +145,70 @@ public class GridManager : MonoBehaviour
     {
         if (x >= 0 && x < columns && z >= 0 && z < rows) return gridPlateMatrix[x, z];
         return null;
+    }
+
+    /// <summary>
+    /// Kiểm tra 4 hướng hàng xóm xung quanh ô vừa thả để tiến hành gộp các lát bánh cùng màu
+    /// </summary>
+    public void CheckAndMergePizza(int startX, int startZ)
+    {
+        PizzaPlate centerPlate = GetPlateAt(startX, startZ);
+        if (centerPlate == null || centerPlate.GetSlices().Count == 0) return;
+
+        // Định nghĩa ma trận 4 hướng hàng xóm: Trên, Dưới, Trái, Phải
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            new Vector2Int(0, 1),  // Trên
+            new Vector2Int(0, -1), // Dưới
+            new Vector2Int(-1, 0), // Trái
+            new Vector2Int(1, 0)   // Phải
+        };
+
+        ToppingType centerColor = centerPlate.GetSlices()[0];
+
+        foreach (Vector2Int dir in directions)
+        {
+            int neighborX = startX + dir.x;
+            int neighborZ = startZ + dir.y;
+
+            PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
+            if (neighborPlate == null || neighborPlate.GetSlices().Count == 0) continue;
+
+            ToppingType neighborColor = neighborPlate.GetSlices()[0];
+
+            // Nếu trùng màu vị -> Tiến hành hút bánh!
+            if (centerColor == neighborColor)
+            {
+                List<ToppingType> centerSlices = centerPlate.GetSlices();
+                List<ToppingType> neighborSlices = neighborPlate.GetSlices();
+
+                // Chuyển các lát bánh từ hàng xóm sang đĩa tâm cho đến khi đĩa tâm đầy (6 lát) hoặc hàng xóm hết bánh
+                while (centerSlices.Count < 6 && neighborSlices.Count > 0)
+                {
+                    centerSlices.Add(neighborColor);
+                    neighborSlices.RemoveAt(neighborSlices.Count - 1);
+                }
+
+                centerPlate.UpdateVisuals();
+                neighborPlate.UpdateVisuals();
+
+                // Nếu đĩa hàng xóm bị hút sạch bánh -> Xóa đĩa trống
+                if (neighborSlices.Count == 0)
+                {
+                    Debug.Log($"[Merge] Ô [{neighborX},{neighborZ}] đã bị hút hết bánh. Xóa đĩa trống!");
+                    Destroy(gridPlateMatrix[neighborX, neighborZ].gameObject);
+                    gridPlateMatrix[neighborX, neighborZ] = null;
+                }
+
+                // Nếu đĩa tâm gom đủ 6 lát thành bánh hoàn chỉnh -> Ăn điểm và xóa đĩa hoàn chỉnh
+                if (centerSlices.Count == 6)
+                {
+                    Debug.Log("<color=yellow>[Combo] Wow! 1 chiếc bánh Pizza đã hoàn chỉnh! +10 Điểm</color>");
+                    Destroy(gridPlateMatrix[startX, startZ].gameObject);
+                    gridPlateMatrix[startX, startZ] = null;
+                    break;
+                }
+            }
+        }
     }
 }

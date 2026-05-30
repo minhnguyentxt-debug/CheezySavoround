@@ -8,12 +8,15 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private DockManager dockManager;
 
     [Header("Drag Settings")]
-    [SerializeField] private float liftHeight = 1.0f; // Độ cao đĩa bánh được nhấc lên khi đang kéo
-    [SerializeField] private LayerMask interactableLayer; // Thiết lập Layer để Raycast lọc chính xác Đĩa và Ô lưới
+    [SerializeField] private float liftHeight = 1.0f;
+    [SerializeField] private LayerMask interactableLayer;
 
-    private PizzaPlate selectedPlate = null;   // Chiếc đĩa đang được chọn để kéo
-    private Vector3 originalPosition;          // Vị trí gốc dưới ô Dock đề phòng trường hợp thả lỗi thì bay về
-    private int sourceDockSlotIndex = -1;      // Lưu lại vị trí ô Dock xuất phát
+    private PizzaPlate selectedPlate = null;
+    private Vector3 originalPosition;
+    private int sourceDockSlotIndex = -1;
+
+    // BÍ QUYẾT: Tạo một biến tạm để ghi nhớ chính xác Collider của đĩa đang cầm
+    private Collider cachedPlateCollider = null;
 
     void Start()
     {
@@ -27,19 +30,16 @@ public class InteractionManager : MonoBehaviour
 
     private void HandleInput()
     {
-        // 1. NHẤN CHUỘT: Bắn tia Raycast để tìm và nhấc đĩa bánh từ dưới Dock lên
         if (Input.GetMouseButtonDown(0))
         {
             TryPickUpPlate();
         }
 
-        // 2. GIỮ CHUỘT: Di chuyển đĩa bánh mượt mà theo con trỏ chuột trên mặt phẳng ảo
         if (Input.GetMouseButton(0) && selectedPlate != null)
         {
             DragPlate();
         }
 
-        // 3. THẢ CHUỘT: Tìm ô lưới bên dưới để đặt bánh vào hoặc trả về Dock cũ
         if (Input.GetMouseButtonUp(0) && selectedPlate != null)
         {
             DropPlate();
@@ -53,14 +53,11 @@ public class InteractionManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 100f))
         {
-            // Kiểm tra xem đối tượng va chạm có chứa script PizzaPlate không
             PizzaPlate plate = hit.collider.GetComponentInParent<PizzaPlate>();
 
-            // Điều kiện: Tìm thấy đĩa và đĩa đó phải nằm ở dưới Dock (chưa được đưa lên Lưới)
             if (plate != null && plate.CurrentX == -1 && plate.CurrentZ == -1)
             {
-                // Dò tìm xem chiếc đĩa này đang nằm ở slot mấy của Dock
-                for (int i = 0; i < 3; i++) // Giả định dock có 3 ô chờ
+                for (int i = 0; i < 3; i++)
                 {
                     if (dockManager.GetPlateAtSlot(i) == plate)
                     {
@@ -73,9 +70,14 @@ public class InteractionManager : MonoBehaviour
                 {
                     selectedPlate = plate;
                     originalPosition = selectedPlate.transform.position;
-
-                    // Nhấc nhẹ đĩa bánh lên theo trục Y để tạo hiệu ứng trực quan "đang cầm kéo đi"
                     selectedPlate.transform.position += Vector3.up * liftHeight;
+
+                    // KHẮC PHỤC 1: Tìm và ép biến ghi nhớ Collider ngay từ lúc này
+                    cachedPlateCollider = selectedPlate.GetComponentInChildren<Collider>();
+                    if (cachedPlateCollider != null)
+                    {
+                        cachedPlateCollider.enabled = false; // Tắt đi để tránh cản tia Raycast
+                    }
                 }
             }
         }
@@ -84,16 +86,12 @@ public class InteractionManager : MonoBehaviour
     private void DragPlate()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-        // Tạo một mặt phẳng toán học nằm ngang ở độ cao mong muốn (Y = vị trí gốc + độ nhấc)
         Plane dragPlane = new Plane(Vector3.up, new Vector3(0, originalPosition.y + liftHeight, 0));
         float enter;
 
-        // Bắn tia xuyên qua mặt phẳng ảo để lấy tọa độ 3D chính xác của chuột
         if (dragPlane.Raycast(ray, out enter))
         {
             Vector3 hitPoint = ray.GetPoint(enter);
-            // Cập nhật vị trí đĩa bánh đuổi theo con trỏ chuột mượt mà
             selectedPlate.transform.position = hitPoint;
         }
     }
@@ -104,14 +102,23 @@ public class InteractionManager : MonoBehaviour
         RaycastHit hit;
         bool placementSuccessful = false;
 
-        // Bắn tia Raycast thẳng từ đĩa bánh xuống dưới xem có trúng ô lưới (Slot) nào không
         if (Physics.Raycast(ray, out hit, 100f))
         {
-            // Tìm ô lưới dựa vào tên hoặc script được gắn trên ô thớt lưới
-            if (hit.collider.name.StartsWith("Slot_"))
+            Transform currentHitTransform = hit.collider.transform;
+            string slotName = "";
+
+            while (currentHitTransform != null)
             {
-                // Trích xuất tọa độ X, Z từ tên ô lưới "Slot_[x,z]" mà GridManager đặt tên
-                string slotName = hit.collider.name;
+                if (currentHitTransform.name.StartsWith("Slot_"))
+                {
+                    slotName = currentHitTransform.name;
+                    break;
+                }
+                currentHitTransform = currentHitTransform.parent;
+            }
+
+            if (!string.IsNullOrEmpty(slotName))
+            {
                 int openBracket = slotName.IndexOf('[');
                 int comma = slotName.IndexOf(',');
                 int closeBracket = slotName.IndexOf(']');
@@ -121,50 +128,62 @@ public class InteractionManager : MonoBehaviour
                     int targetX = int.Parse(slotName.Substring(openBracket + 1, comma - openBracket - 1));
                     int targetZ = int.Parse(slotName.Substring(comma + 1, closeBracket - comma - 1));
 
-                    // Kiểm tra với GridManager xem ô này có trống không
                     if (gridManager.CanPlacePlate(targetX, targetZ))
                     {
-                        // Đưa đĩa vào ma trận lưới và cố định vị trí hình học
                         gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
 
-                        // Giải phóng ô chờ dưới Dock để chuẩn bị sinh lượt bánh mới
-                        dockManager.EmptyDockSlot(sourceDockSlotIndex);
+                        // Kích hoạt kiểm tra gộp bánh (Có khả năng đĩa sẽ bị Destroy tại đây)
+                        gridManager.CheckAndMergePizza(targetX, targetZ);
 
+                        dockManager.EmptyDockSlot(sourceDockSlotIndex);
                         placementSuccessful = true;
 
-                        // Tự động kích hoạt cơ chế sinh thêm đĩa mới nếu các ô dưới Dock bị trống trống
+                        // KHẮC PHỤC 2: Kiểm tra xem đĩa bánh có còn sống sót sau Combo không thì mới bật lại Collider
+                        if (selectedPlate != null && cachedPlateCollider != null)
+                        {
+                            cachedPlateCollider.enabled = true;
+                        }
+
                         dockManager.SpawnNewPlatesToAllSlots();
                     }
                 }
             }
         }
 
-        // Nếu thả trượt hoặc thả vào ô đã có bánh -> Trả đĩa bay về vị trí cũ dưới Dock
+        // Trường hợp thả trượt ra ngoài ô lưới
         if (!placementSuccessful)
         {
+            // Bật lại Collider dựa trên biến nhớ tạm (chắc chắn thành công vì đĩa chưa bị hủy)
+            if (cachedPlateCollider != null)
+            {
+                cachedPlateCollider.enabled = true;
+            }
+
             StartCoroutine(ReturnToSenderCoroutine(selectedPlate, originalPosition));
         }
 
-        // Reset trạng thái quản lý biến tạm
+        // KHẮC PHỤC NGOẠI LỆ: Ép giải phóng bộ nhớ sạch sẽ dù bất kỳ kịch bản nào xảy ra
         selectedPlate = null;
+        cachedPlateCollider = null;
         sourceDockSlotIndex = -1;
     }
 
-    /// <summary>
-    /// Hiệu ứng Lerp mượt mà giúp đĩa bánh tự động bay ngược về Dock cũ nếu người chơi thả lỗi
-    /// </summary>
     private System.Collections.IEnumerator ReturnToSenderCoroutine(PizzaPlate plate, Vector3 targetPos)
     {
+        if (plate == null) yield break;
+
         float elapsed = 0f;
-        float duration = 0.15f; // Thời gian bay về là 0.15 giây
+        float duration = 0.15f;
         Vector3 startPos = plate.transform.position;
 
         while (elapsed < duration)
         {
+            if (plate == null) yield break; // Phòng thủ nếu đĩa bị hủy đột ngột lúc đang bay
             elapsed += Time.deltaTime;
             plate.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
             yield return null;
         }
-        plate.transform.position = targetPos;
+
+        if (plate != null) plate.transform.position = targetPos;
     }
 }
