@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\CheezySavoround\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scrip\\pizzaplate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scrip\\pizzaplate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scrip\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scrip\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -31,27 +35,39 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "PizzaPlate.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scrip\\PizzaPlate.cs",
+              "RelativeDocumentMoniker": "Assets\\Scrip\\PizzaPlate.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scrip\\PizzaPlate.cs",
+              "RelativeToolTip": "Assets\\Scrip\\PizzaPlate.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAAcwC4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T03:47:10.399Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "GameEnums.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scrip\\GameEnums.cs",
               "RelativeDocumentMoniker": "Assets\\Scrip\\GameEnums.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scrip\\GameEnums.cs",
               "RelativeToolTip": "Assets\\Scrip\\GameEnums.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-30T03:46:32.531Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "NewMonoBehaviourScript.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scrip\\NewMonoBehaviourScript.cs",
               "RelativeDocumentMoniker": "Assets\\Scrip\\NewMonoBehaviourScript.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scrip\\NewMonoBehaviourScript.cs",
               "RelativeToolTip": "Assets\\Scrip\\NewMonoBehaviourScript.cs",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-20T15:13:11.839Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-20T15:13:11.839Z"
             },
             {
               "$type": "Bookmark",
