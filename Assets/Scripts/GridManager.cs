@@ -24,9 +24,36 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         GenerateGrid();
-        LoadLevelFromJSON(1);
+        // LoadLevelFromJSON(1);
+        SpawnRandomTestPlates(5);
     }
+    private void SpawnRandomTestPlates(int count)
+    {
+        int spawned = 0;
+        while (spawned < count)
+        {
+            int rx = UnityEngine.Random.Range(0, columns);
+            int rz = UnityEngine.Random.Range(0, rows);
 
+            if (CanPlacePlate(rx, rz))
+            {
+                Vector3 slotPos = gridMatrix[rx, rz].transform.position;
+                GameObject plateObj = Instantiate(platePrefab, slotPos, Quaternion.identity, transform);
+
+                PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
+                if (pizzaPlateScript != null)
+                {
+                    // Gọi hàm sinh từ 1-3 vị ngẫu nhiên (Hãy đảm bảo bạn đã viết hàm này trong PizzaPlate.cs)
+                    pizzaPlateScript.GenerateRandomSlices();
+
+                    pizzaPlateScript.CurrentX = rx;
+                    pizzaPlateScript.CurrentZ = rz;
+                    gridPlateMatrix[rx, rz] = pizzaPlateScript;
+                    spawned++;
+                }
+            }
+        }
+    }
     /// <summary>
     /// Khởi tạo ma trận lưới vuông khít nhau và tự động nhuộm màu so le bàn cờ
     /// </summary>
@@ -155,16 +182,10 @@ public class GridManager : MonoBehaviour
         PizzaPlate centerPlate = GetPlateAt(startX, startZ);
         if (centerPlate == null || centerPlate.GetSlices().Count == 0) return;
 
-        // Định nghĩa ma trận 4 hướng hàng xóm: Trên, Dưới, Trái, Phải
         Vector2Int[] directions = new Vector2Int[]
         {
-            new Vector2Int(0, 1),  // Trên
-            new Vector2Int(0, -1), // Dưới
-            new Vector2Int(-1, 0), // Trái
-            new Vector2Int(1, 0)   // Phải
+        new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(1, 0)
         };
-
-        ToppingType centerColor = centerPlate.GetSlices()[0];
 
         foreach (Vector2Int dir in directions)
         {
@@ -174,40 +195,53 @@ public class GridManager : MonoBehaviour
             PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
             if (neighborPlate == null || neighborPlate.GetSlices().Count == 0) continue;
 
-            ToppingType neighborColor = neighborPlate.GetSlices()[0];
+            List<ToppingType> centerSlices = centerPlate.GetSlices();
+            List<ToppingType> neighborSlices = neighborPlate.GetSlices();
 
-            // Nếu trùng màu vị -> Tiến hành hút bánh!
-            if (centerColor == neighborColor)
+            // LOGIC SMART MERGE: Duyệt ngược để xóa lát bánh an toàn
+            for (int i = neighborSlices.Count - 1; i >= 0; i--)
             {
-                List<ToppingType> centerSlices = centerPlate.GetSlices();
-                List<ToppingType> neighborSlices = neighborPlate.GetSlices();
+                // Nếu đĩa tâm đã đầy 6 lát thì không hút thêm được nữa
+                if (centerSlices.Count >= 6) break;
 
-                // Chuyển các lát bánh từ hàng xóm sang đĩa tâm cho đến khi đĩa tâm đầy (6 lát) hoặc hàng xóm hết bánh
-                while (centerSlices.Count < 6 && neighborSlices.Count > 0)
+                ToppingType toppingToMove = neighborSlices[i];
+
+                // Nếu đĩa tâm có chứa loại vị này (hoặc nếu đĩa tâm rỗng, có thể tùy chỉnh thêm), 
+                // ta hút lát này về đĩa tâm
+                if (centerSlices.Contains(toppingToMove))
                 {
-                    centerSlices.Add(neighborColor);
-                    neighborSlices.RemoveAt(neighborSlices.Count - 1);
+                    centerSlices.Add(toppingToMove);
+                    neighborSlices.RemoveAt(i);
                 }
+            }
 
-                centerPlate.UpdateVisuals();
-                neighborPlate.UpdateVisuals();
+            // Cập nhật lại hình ảnh sau khi hút
+            centerPlate.UpdateVisuals();
+            neighborPlate.UpdateVisuals();
 
-                // Nếu đĩa hàng xóm bị hút sạch bánh -> Xóa đĩa trống
-                if (neighborSlices.Count == 0)
-                {
-                    Debug.Log($"[Merge] Ô [{neighborX},{neighborZ}] đã bị hút hết bánh. Xóa đĩa trống!");
-                    Destroy(gridPlateMatrix[neighborX, neighborZ].gameObject);
-                    gridPlateMatrix[neighborX, neighborZ] = null;
-                }
+            // Xóa đĩa hàng xóm nếu nó đã trống rỗng
+            if (neighborSlices.Count == 0)
+            {
+                Destroy(neighborPlate.gameObject);
+                gridPlateMatrix[neighborX, neighborZ] = null;
+            }
+        }
 
-                // Nếu đĩa tâm gom đủ 6 lát thành bánh hoàn chỉnh -> Ăn điểm và xóa đĩa hoàn chỉnh
-                if (centerSlices.Count == 6)
-                {
-                    Debug.Log("<color=yellow>[Combo] Wow! 1 chiếc bánh Pizza đã hoàn chỉnh! +10 Điểm</color>");
-                    Destroy(gridPlateMatrix[startX, startZ].gameObject);
-                    gridPlateMatrix[startX, startZ] = null;
-                    break;
-                }
+        // KIỂM TRA COMBO: Chỉ nổ khi đĩa tâm đạt 6 lát VÀ đồng nhất 1 loại vị
+        if (centerPlate.GetSlices().Count == 6)
+        {
+            ToppingType firstType = centerPlate.GetSlices()[0];
+            bool isPerfect = true;
+            foreach (var s in centerPlate.GetSlices()) if (s != firstType) isPerfect = false;
+
+            if (isPerfect)
+            {
+                GameEventSystem.OnPizzaCompleted?.Invoke(firstType);
+
+                Debug.Log($"<color=yellow>[Combo] Hoàn thành đĩa {firstType}! Bắn sự kiện thành công.</color>");
+
+                Destroy(gridPlateMatrix[startX, startZ].gameObject);
+                gridPlateMatrix[startX, startZ] = null;
             }
         }
     }

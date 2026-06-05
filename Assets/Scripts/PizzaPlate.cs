@@ -16,11 +16,37 @@ public class PizzaPlate : MonoBehaviour
     /// <summary>
     /// Thiết lập đĩa với danh sách các lát bánh cụ thể và vị trí ma trận tương ứng
     /// </summary>
+    // Bạn hãy đảm bảo hàm SetupPlate chấp nhận một danh sách Topping ngẫu nhiên
     public void SetupPlate(List<ToppingType> newSlices, int x, int z)
     {
+        this.slices = newSlices;
         this.CurrentX = x;
         this.CurrentZ = z;
-        this.slices = new List<ToppingType>(newSlices);
+        UpdateVisuals();
+    }
+
+    // Thêm hàm này để gọi khi cần tạo đĩa mới với 1-3 vị ngẫu nhiên
+    public void GenerateRandomSlices()
+    {
+        slices.Clear();
+        int randomCount = UnityEngine.Random.Range(2, 6); // Ví dụ: đĩa có từ 2-5 lát bánh
+
+        // Chọn từ 1 đến 3 loại vị khác nhau để trộn vào đĩa
+        int uniqueToppingCount = UnityEngine.Random.Range(1, 4);
+        List<ToppingType> selectedToppings = new List<ToppingType>();
+
+        System.Array toppingValues = System.Enum.GetValues(typeof(ToppingType));
+        for (int i = 0; i < uniqueToppingCount; i++)
+        {
+            selectedToppings.Add((ToppingType)toppingValues.GetValue(UnityEngine.Random.Range(0, toppingValues.Length)));
+        }
+
+        // Gán các vị đã chọn vào các lát bánh trên đĩa
+        for (int i = 0; i < randomCount; i++)
+        {
+            ToppingType randomTopping = selectedToppings[UnityEngine.Random.Range(0, selectedToppings.Count)];
+            slices.Add(randomTopping);
+        }
 
         UpdateVisuals();
     }
