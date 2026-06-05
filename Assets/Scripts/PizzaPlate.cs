@@ -1,22 +1,17 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PizzaPlate : MonoBehaviour
 {
     [Header("Pizza Slices Data")]
-    // Đĩa quản lý một danh sách các lát bánh đặt trên nó (tối đa 6 lát)
     [SerializeField] private List<ToppingType> slices = new List<ToppingType>();
 
-    // Tọa độ ma trận trên lưới (-1 nghĩa là đang nằm ở dưới ô Dock)
     public int CurrentX { get; set; } = -1;
     public int CurrentZ { get; set; } = -1;
 
-    private const int MAX_SLOTS = 6; // Một chiếc bánh pizza hoàn chỉnh gồm 6 lát
+    private const int MAX_SLOTS = 6;
 
-    /// <summary>
-    /// Thiết lập đĩa với danh sách các lát bánh cụ thể và vị trí ma trận tương ứng
-    /// </summary>
-    // Bạn hãy đảm bảo hàm SetupPlate chấp nhận một danh sách Topping ngẫu nhiên
     public void SetupPlate(List<ToppingType> newSlices, int x, int z)
     {
         this.slices = newSlices;
@@ -25,13 +20,11 @@ public class PizzaPlate : MonoBehaviour
         UpdateVisuals();
     }
 
-    // Thêm hàm này để gọi khi cần tạo đĩa mới với 1-3 vị ngẫu nhiên
     public void GenerateRandomSlices()
     {
         slices.Clear();
-        int randomCount = UnityEngine.Random.Range(2, 6); // Ví dụ: đĩa có từ 2-5 lát bánh
+        int randomCount = UnityEngine.Random.Range(2, 6);
 
-        // Chọn từ 1 đến 3 loại vị khác nhau để trộn vào đĩa
         int uniqueToppingCount = UnityEngine.Random.Range(1, 4);
         List<ToppingType> selectedToppings = new List<ToppingType>();
 
@@ -41,7 +34,6 @@ public class PizzaPlate : MonoBehaviour
             selectedToppings.Add((ToppingType)toppingValues.GetValue(UnityEngine.Random.Range(0, toppingValues.Length)));
         }
 
-        // Gán các vị đã chọn vào các lát bánh trên đĩa
         for (int i = 0; i < randomCount; i++)
         {
             ToppingType randomTopping = selectedToppings[UnityEngine.Random.Range(0, selectedToppings.Count)];
@@ -51,26 +43,25 @@ public class PizzaPlate : MonoBehaviour
         UpdateVisuals();
     }
 
-    /// <summary>
-    /// Trả về danh sách các lát bánh hiện có trên đĩa để phục vụ thuật toán so khớp gộp màu
-    /// </summary>
     public List<ToppingType> GetSlices() => slices;
 
     /// <summary>
-    /// Xóa toàn bộ mô hình lát bánh cũ và vẽ lại các lát bánh mới quay tròn quanh tâm đĩa
+    /// CẬP NHẬT TỐI ƯU CHO POOLING: Dọn dẹp Visual ngay lập tức, không để lại đĩa trống
     /// </summary>
     public void UpdateVisuals()
     {
-        // 1. Dọn dẹp sạch sẽ các mô hình lát bánh cũ dựa theo tên định danh "Slice_" để tránh lỗi mọc chồng chất
+        // 1. DẠ TRÚC SỬA ĐỔI: Dùng DestroyImmediate thay vì Destroy thông thường 
+        // để ép các lát bánh cũ biến mất NGAY LẬP TỨC trong cùng 1 frame, tránh lỗi Pooling mang Visual cũ sang đĩa mới.
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
             Transform child = transform.GetChild(i);
             if (child.name.StartsWith("Slice_"))
             {
-                Destroy(child.gameObject);
+                DestroyImmediate(child.gameObject); // Xóa ngay lập tức, không chờ đợi cuối frame
             }
         }
 
+        // Nếu đĩa không có bánh, dừng lại luôn (Đĩa hoàn toàn trống sạch sẽ)
         if (slices == null || slices.Count == 0) return;
 
         // 2. Duyệt qua danh sách dữ liệu để xếp các lát bánh lên đĩa thực thể
@@ -82,7 +73,6 @@ public class PizzaPlate : MonoBehaviour
             string modelPath = "PizzaModels/Model_" + sliceColor.ToString();
             GameObject modelPrefab = Resources.Load<GameObject>(modelPath);
 
-            // Thuật toán chia góc quay tròn đều quanh đĩa (Lát 0: 0 độ, Lát 1: 60 độ, Lát 2: 120 độ...)
             float angleY = i * (360f / MAX_SLOTS);
             GameObject sliceObj;
 
@@ -92,18 +82,16 @@ public class PizzaPlate : MonoBehaviour
                 sliceObj = Instantiate(modelPrefab, transform);
                 sliceObj.name = $"Slice_{i}_{sliceColor}";
 
-                // Đặt lát bánh nằm TRÊN mặt đĩa Cylinder (Y = 0.2f để không bị chìm xuống đáy đĩa)
                 sliceObj.transform.localPosition = new Vector3(0f, 0.5f, 0f);
                 sliceObj.transform.localEulerAngles = new Vector3(0f, angleY, 0f);
             }
-            // 4. BIỆN PHÁP PHÒNG THỦ: Tự sinh khối hình học dẹt nhuộm màu nếu hệ thống Load Resources gặp lỗi đường dẫn
+            // 4. BIỆN PHÁP PHÒNG THỦ: Tự sinh khối hình học dẹt nhuộm màu
             else
             {
                 sliceObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 sliceObj.name = $"Slice_{i}_Fallback";
                 sliceObj.transform.SetParent(transform);
 
-                // Đẩy các khối trụ tạm dạt ra rìa đĩa để xếp thành vòng tròn trực quan
                 float radius = 0.5f;
                 float rad = angleY * Mathf.Deg2Rad;
                 sliceObj.transform.localPosition = new Vector3(Mathf.Cos(rad) * radius, 0.25f, Mathf.Sin(rad) * radius);
@@ -120,9 +108,6 @@ public class PizzaPlate : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Hàm phụ trợ chuyển đổi từ kiểu Enum sang cấu trúc Color của Unity để phục vụ Fallback hệ thống
-    /// </summary>
     private Color GetColorFromEnum(ToppingType type)
     {
         switch (type)
@@ -135,5 +120,44 @@ public class PizzaPlate : MonoBehaviour
             case ToppingType.Green: return Color.green;
             default: return Color.gray;
         }
+    }
+
+    public IEnumerator AnimateSliceFly(Transform sliceTransform, Vector3 targetPosition, float duration)
+    {
+        Vector3 startPosition = sliceTransform.position;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            t = t * t * (3f - 2f * t);
+
+            float bonusY = Mathf.Sin(t * Mathf.PI) * 1.5f;
+            Vector3 currentPos = Vector3.Lerp(startPosition, targetPosition, t);
+            currentPos.y += bonusY;
+
+            sliceTransform.position = currentPos;
+            yield return null;
+        }
+
+        sliceTransform.position = targetPosition;
+    }
+
+    private void OnEnable()
+    {
+        GameEventSystem.OnSkinSelected += ApplyNewSkinMaterial;
+    }
+
+    private void OnDisable()
+    {
+        GameEventSystem.OnSkinSelected -= ApplyNewSkinMaterial;
+    }
+
+    private void ApplyNewSkinMaterial(string skinId)
+    {
+        // Renderer plateRenderer = GetComponent<Renderer>();
+        // plateRenderer.material = ...
     }
 }

@@ -86,8 +86,8 @@ public class DockManager : MonoBehaviour
             return randomToppings;
         }
 
-        // 1. Quyết định đĩa này có tổng cộng bao nhiêu lát bánh (ngẫu nhiên từ 2 đến 5 lát)
-        int totalSlices = Random.Range(2, 6);
+        // 1. Quyết định đĩa này có tổng cộng bao nhiêu lát bánh (ngẫu nhiên từ 2 đến 4 lát)
+        int totalSlices = Random.Range(2, 5);
 
         // 2. Quyết định đĩa này trộn bao nhiêu LOẠI vị khác nhau (từ 1 đến 3 loại vị độc nhất)
         int uniqueToppingCount = Random.Range(1, 4);

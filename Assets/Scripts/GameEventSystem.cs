@@ -7,4 +7,6 @@ public static class GameEventSystem
     public static Action<int> OnScoreChanged;
 
     public static Action<int> OnGoldChanged;
+
+    public static Action<string> OnSkinSelected;
 }
