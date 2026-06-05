@@ -3,87 +3,114 @@ using UnityEngine;
 
 public class DockManager : MonoBehaviour
 {
-    [Header("Dock Settings")]
-    [SerializeField] private int dockSlotCount = 3;
-    [SerializeField] private float slotSpacing = 4.0f;
-    [SerializeField] private Vector3 dockOffset = new Vector3(0f, 0.1f, -10.0f);
+    [Header("Prefabs & Spawn Points")]
+    [SerializeField] private GameObject platePrefab;       // Prefab của chiếc đĩa bánh (Plate_Base_Prefab)
+    [SerializeField] private Transform[] spawnPoints;      // Mảng chứa 3 vị trí Transform (vị trí 3 ô Dock trên màn hình)
 
-    [Header("Prefabs")]
-    [SerializeField] private GameObject platePrefab; // Plate_Base_Prefab có chứa đĩa nền mặc định
-
-    private Vector3[] dockPositions;
-    // QUAN TRỌNG: Mảng một chiều quản lý duy nhất 1 Đĩa tại mỗi ô chờ
-    private PizzaPlate[] dockPlates;
+    [Header("Current Dock State")]
+    [SerializeField] private PizzaPlate[] dockSlots = new PizzaPlate[3];
 
     void Start()
     {
-        InitializeDock();
         SpawnNewPlatesToAllSlots();
     }
 
-    private void InitializeDock()
+    /// <summary>
+    /// Lấy thông tin đĩa bánh tại một ô Dock cụ thể để kiểm tra lúc nhấc bánh kéo đi
+    /// </summary>
+    public PizzaPlate GetPlateAtSlot(int index)
     {
-        dockPositions = new Vector3[dockSlotCount];
-        dockPlates = new PizzaPlate[dockSlotCount];
-
-        float totalWidth = (dockSlotCount - 1) * slotSpacing;
-        float startX = -totalWidth / 2f;
-
-        for (int i = 0; i < dockSlotCount; i++)
+        if (index >= 0 && index < dockSlots.Length)
         {
-            dockPositions[i] = transform.position + dockOffset + new Vector3(startX + (i * slotSpacing), 0f, 0f);
+            return dockSlots[index];
         }
-    }
-
-    public void SpawnNewPlatesToAllSlots()
-    {
-        for (int i = 0; i < dockSlotCount; i++)
-        {
-            if (dockPlates[i] == null)
-            {
-                SpawnRandomPlateAtSlot(i);
-            }
-        }
-    }
-
-    private void SpawnRandomPlateAtSlot(int slotIndex)
-    {
-        // 1. Sinh duy nhất 1 chiếc đĩa tại ô dock
-        GameObject plateObj = Instantiate(platePrefab, dockPositions[slotIndex], Quaternion.identity, transform);
-        plateObj.name = $"Dock_Plate_{slotIndex}";
-
-        PizzaPlate plateScript = plateObj.GetComponent<PizzaPlate>();
-        if (plateScript != null)
-        {
-            // 2. Ngẫu nhiên số lượng lát bánh đặt lên đĩa từ 1 đến 6
-            int randomSliceCount = Random.Range(1, 7);
-
-            // 3. Chọn ngẫu nhiên 1 màu/vị cho toàn bộ lát bánh trên đĩa này (Bỏ qua vị None ở index 0)
-            ToppingType randomColor = (ToppingType)Random.Range(1, 7);
-
-            List<ToppingType> randomSlices = new List<ToppingType>();
-            for (int i = 0; i < randomSliceCount; i++)
-            {
-                randomSlices.Add(randomColor);
-            }
-
-            // 4. Đẩy danh sách lát bánh vào đĩa xử lý trực quan
-            plateScript.SetupPlate(randomSlices, -1, -1);
-            dockPlates[slotIndex] = plateScript;
-        }
-    }
-
-    public PizzaPlate GetPlateAtSlot(int slotIndex)
-    {
-        if (slotIndex >= 0 && slotIndex < dockSlotCount) return dockPlates[slotIndex];
         return null;
     }
 
-    public void EmptyDockSlot(int slotIndex)
+    /// <summary>
+    /// Giải phóng ô Dock khi người chơi đã nhấc bánh và đặt lên lưới thành công
+    /// </summary>
+    public void EmptyDockSlot(int index)
     {
-        if (slotIndex >= 0 && slotIndex < dockSlotCount)
+        if (index >= 0 && index < dockSlots.Length)
         {
-            dockPlates[slotIndex] = null;
+            dockSlots[index] = null;
         }
+    }
+
+    /// <summary>
+    /// Quét qua toàn bộ các ô Dock, ô nào trống sẽ tự động sinh đĩa bánh mới mang từ 1-3 vị hỗn hợp
+    /// </summary>
+    public void SpawnNewPlatesToAllSlots()
+    {
+        for (int i = 0; i < dockSlots.Length; i++)
+        {
+            if (dockSlots[i] == null)
+            {
+                if (spawnPoints == null || i >= spawnPoints.Length || spawnPoints[i] == null || platePrefab == null)
+                {
+                    Debug.LogWarning($"[DockManager] Thiếu cấu hình SpawnPoint hoặc PlatePrefab ở ô Slot index {i}!");
+                    continue;
+                }
+
+                // 1. Khởi tạo Object đĩa bánh
+                GameObject plateObj = Instantiate(platePrefab, spawnPoints[i].position, Quaternion.identity, transform);
+                plateObj.name = $"Dock_Plate_Slot_[{i}]";
+
+                // 2. Lấy danh sách vị hỗn hợp và setup duy nhất 1 lần
+                PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
+                if (pizzaPlateScript != null)
+                {
+                    List<ToppingType> mixedToppings = GetMixedToppingsForDock();
+                    pizzaPlateScript.SetupPlate(mixedToppings, -1, -1);
+
+                    // Lưu đĩa vào mảng quản lý Dock luôn
+                    dockSlots[i] = pizzaPlateScript;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Tạo ra danh sách lát bánh ngẫu nhiên chứa từ 1 đến 3 loại vị khác nhau (Bỏ qua vị None)
+    /// </summary>
+    private List<ToppingType> GetMixedToppingsForDock()
+    {
+        List<ToppingType> randomToppings = new List<ToppingType>();
+        System.Array allToppings = System.Enum.GetValues(typeof(ToppingType));
+
+        // Phòng trường hợp Enum không có dữ liệu
+        if (allToppings.Length <= 1)
+        {
+            randomToppings.Add(ToppingType.None);
+            return randomToppings;
+        }
+
+        // 1. Quyết định đĩa này có tổng cộng bao nhiêu lát bánh (ngẫu nhiên từ 2 đến 5 lát)
+        int totalSlices = Random.Range(2, 6);
+
+        // 2. Quyết định đĩa này trộn bao nhiêu LOẠI vị khác nhau (từ 1 đến 3 loại vị độc nhất)
+        int uniqueToppingCount = Random.Range(1, 4);
+
+        List<ToppingType> chosenPool = new List<ToppingType>();
+
+        // Chọn ra các loại vị độc nhất không trùng nhau (Bắt đầu từ index 1 để né ToppingType.None ở vị trí 0)
+        while (chosenPool.Count < uniqueToppingCount && chosenPool.Count < (allToppings.Length - 1))
+        {
+            ToppingType randomType = (ToppingType)allToppings.GetValue(Random.Range(1, allToppings.Length));
+            if (!chosenPool.Contains(randomType))
+            {
+                chosenPool.Add(randomType);
+            }
+        }
+
+        // 3. Rải các loại vị đã chọn trong rổ vào số lượng lát bánh của đĩa
+        for (int i = 0; i < totalSlices; i++)
+        {
+            ToppingType finalTopping = chosenPool[Random.Range(0, chosenPool.Count)];
+            randomToppings.Add(finalTopping);
+        }
+
+        return randomToppings;
     }
 }
