@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,19 +25,35 @@ public class GridManager : MonoBehaviour
 
     private Queue<GameObject> platePool = new Queue<GameObject>();
     [Header("Pooling Config")]
-    [SerializeField] private int initialPoolSize = 10; // Khởi tạo sẵn 10 đĩa ẩn trong bộ nhớ
+    [SerializeField] private int initialPoolSize = 10;
+
+    [System.Serializable]
+    public struct PizzaSlicePrefabData
+    {
+        public ToppingType toppingType;
+        public GameObject slicePrefab;
+    }
+
+    [Header("--- CẤU HÌNH LÁT BÁNH BAY ---")]
+    [SerializeField] private List<PizzaSlicePrefabData> pizzaSlicePrefabs;
+
+    private GameObject GetSlicePrefab(ToppingType topping)
+    {
+        foreach (var data in pizzaSlicePrefabs)
+        {
+            if (data.toppingType == topping) return data.slicePrefab;
+        }
+        return null;
+    }
 
     void Start()
     {
-        InitializePlatePool(); // Khởi tạo Pool trước
+        InitializePlatePool();
         GenerateGrid();
         // LoadLevelFromJSON(1);
         SpawnRandomTestPlates(5);
     }
 
-    /// <summary>
-    /// Tạo sẵn một lượng đĩa bánh và ẩn chúng đi để nạp vào Pool
-    /// </summary>
     private void InitializePlatePool()
     {
         for (int i = 0; i < initialPoolSize; i++)
@@ -47,10 +64,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Hàm lấy đĩa bánh ra từ Pool (Thay thế cho Instantiate)
-    /// </summary>
-    private GameObject GetPlateFromPool(Vector3 position, Quaternion rotation)
+    public GameObject GetPlateFromPool(Vector3 position, Quaternion rotation)
     {
         GameObject plateObj;
 
@@ -63,28 +77,25 @@ public class GridManager : MonoBehaviour
         }
         else
         {
-            // Nếu người chơi gộp quá nhiều đĩa vượt mức tính toán ban đầu -> Tự sinh thêm để bù vào Pool
             plateObj = Instantiate(platePrefab, position, rotation, transform);
         }
 
         return plateObj;
     }
 
-    /// <summary>
-    /// Hàm thu hồi đĩa bánh về Pool (Thay thế cho Destroy)
-    /// </summary>
     private void ReturnPlateToPool(GameObject plateObj)
     {
         if (plateObj == null) return;
 
         plateObj.SetActive(false);
-        plateObj.transform.SetParent(transform); // Đưa về làm con của GridManager cho gọn Hierarchy
+        plateObj.transform.SetParent(transform);
 
-        // Reset dữ liệu đĩa bánh trước khi cất đi (Tránh việc đĩa cũ mang vị sang đĩa mới)
         PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
         if (pizzaPlateScript != null)
         {
-            pizzaPlateScript.GetSlices().Clear(); // Xóa sạch các lát bánh cũ trên đĩa
+            // Sử dụng ClearAllSlices nếu bạn đã định nghĩa nó trong PizzaPlate, 
+            // hoặc dùng Clear() danh sách logic tùy thuộc cấu trúc của bạn.
+            pizzaPlateScript.GetSlices().Clear();
         }
 
         platePool.Enqueue(plateObj);
@@ -195,8 +206,6 @@ public class GridManager : MonoBehaviour
             if (targetX < 0 || targetX >= columns || targetZ < 0 || targetZ >= rows) continue;
 
             Vector3 slotCenterPos = gridMatrix[targetX, targetZ].transform.position;
-
-            // ĐÃ SỬA: Lấy từ Pool thay vì Instantiate
             GameObject plateObj = GetPlateFromPool(slotCenterPos, Quaternion.identity);
             plateObj.name = $"Grid_Plate_[{targetX},{targetZ}]";
 
@@ -243,13 +252,9 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    // Cấu trúc phụ trợ để lưu thông tin hàng xóm phục vụ thuật toán sắp xếp ưu tiên
-    private struct NeighborInfo
-    {
-        public PizzaPlate plate;
-        public int x;
-        public int z;
-    }
+    /// <summary>
+    /// LOGIC GIỮ NGUYÊN BẢN CŨ: Dùng hàng đợi Loang nhưng có màng lọc khống chế khoảng cách nghiêm ngặt trong phạm vi 4 hướng của đĩa mới đặt
+    /// </summary>
     public void CheckAndMergePizza(int startX, int startZ)
     {
         Queue<Vector2Int> cellsToCheck = new Queue<Vector2Int>();
@@ -285,6 +290,11 @@ public class GridManager : MonoBehaviour
             int x = currentCell.x;
             int z = currentCell.y;
 
+            // BỘ LỌC 1: Nếu ô này bằng cách nào đó vượt quá phạm vi 4 hướng của đĩa ban đầu -> Bỏ qua không xử lý
+            if (Mathf.Abs(x - startX) + Mathf.Abs(z - startZ) > 1) continue;
+
+            CheckAndExecuteCombo(x, z);
+
             PizzaPlate currentPlate = GetPlateAt(x, z);
 
             if (currentPlate != null && currentPlate.GetSlices().Count == 0)
@@ -294,213 +304,230 @@ public class GridManager : MonoBehaviour
             }
             if (currentPlate == null) continue;
 
-            // --- PHASE 1: ĐĨA HIỆN TẠI "ĐẨY" BÁNH (PHÂN TÁCH THEO VỊ) ---
             if (currentPlate.GetSlices().Count > 0)
             {
-                // Lấy danh sách các vị DUY NHẤT đang có mặt trên đĩa hiện tại
                 List<ToppingType> uniqueToppings = currentPlate.GetSlices()
                     .Where(t => t != ToppingType.None)
                     .Distinct()
                     .ToList();
 
-                // Duyệt qua TỪNG VỊ MỘT để xử lý đẩy đi riêng biệt
                 foreach (ToppingType topping in uniqueToppings)
                 {
+                    currentPlate = GetPlateAt(x, z);
                     if (currentPlate == null || currentPlate.GetSlices().Count == 0) break;
 
-                    List<NeighborInfo> validPushNeighbors = new List<NeighborInfo>();
+                    Vector2Int targetCell = FindBestTargetForTopping(x, z, topping);
 
-                    // Tìm những hàng xóm có chứa CHÍNH VỊ NÀY
-                    foreach (Vector2Int dir in directions)
+                    // BỘ LỌC 2: Chỉ tương tác nếu đĩa mục tiêu tốt nhất cũng nằm trong phạm vi 4 hướng của đĩa mới đặt
+                    if (targetCell.x != -1 && (Mathf.Abs(targetCell.x - startX) + Mathf.Abs(targetCell.y - startZ) <= 1))
                     {
-                        int neighborX = x + dir.x;
-                        int neighborZ = z + dir.y;
+                        PizzaPlate targetPlate = GetPlateAt(targetCell.x, targetCell.y);
+                        if (targetPlate == null) continue;
 
-                        PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
-                        if (neighborPlate == null || neighborPlate.GetSlices().Count == 0 || neighborPlate.GetSlices().Count >= 6) continue;
+                        List<ToppingType> targetSlices = targetPlate.GetSlices();
 
-                        if (neighborPlate.GetSlices().Contains(topping))
+                        // 1. ĐẨY CÁC LÁT BÁNH KHÁC LOẠI (OUTCAST) KHỎI ĐĨA TIẾP NHẬN
+                        for (int i = targetSlices.Count - 1; i >= 0; i--)
                         {
-                            validPushNeighbors.Add(new NeighborInfo { plate = neighborPlate, x = neighborX, z = neighborZ });
-                        }
-                    }
-
-                    // ƯU TIÊN THÔNG MINH: Đĩa nào có nhiều lát của CHÍNH VỊ NÀY hơn thì xếp lên đầu để nhanh nổ Combo
-                    validPushNeighbors.Sort((a, b) =>
-                        b.plate.GetSlices().Count(t => t == topping).CompareTo(a.plate.GetSlices().Count(t => t == topping))
-                    );
-
-                    // Tiến hành đẩy DUY NHẤT vị đang xét sang các hàng xóm tương ứng
-                    foreach (var targetNeighbor in validPushNeighbors)
-                    {
-                        // Nếu đĩa hiện tại đã bị đẩy hết sạch vị này rồi thì đổi vị khác
-                        if (!currentPlate.GetSlices().Contains(topping)) break;
-
-                        int neighborX = targetNeighbor.x;
-                        int neighborZ = targetNeighbor.z;
-                        PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
-                        if (neighborPlate == null || neighborPlate.GetSlices().Count >= 6) continue;
-
-                        List<ToppingType> currentSlices = currentPlate.GetSlices();
-                        List<ToppingType> neighborSlices = neighborPlate.GetSlices();
-                        bool isPushed = false;
-
-                        // Chỉ lọc và đẩy đúng lát bánh có vị `topping` hiện tại
-                        for (int i = currentSlices.Count - 1; i >= 0; i--)
-                        {
-                            if (neighborSlices.Count >= 6) break;
-
-                            if (currentSlices[i] == topping)
+                            ToppingType outcast = targetSlices[i];
+                            if (outcast != topping && outcast != ToppingType.None)
                             {
-                                neighborSlices.Add(topping);
-                                currentSlices.RemoveAt(i);
-                                isPushed = true;
-                            }
-                        }
+                                Vector2Int dest = FindEvictDestination(targetCell.x, targetCell.y, outcast);
 
-                        if (isPushed)
-                        {
-                            currentPlate.UpdateVisuals();
-                            neighborPlate.UpdateVisuals();
-                            CheckAndExecuteCombo(neighborX, neighborZ);
-
-                            neighborPlate = GetPlateAt(neighborX, neighborZ);
-                            if (neighborPlate != null && neighborPlate.GetSlices().Count == 0)
-                            {
-                                DestroyGridPlate(neighborX, neighborZ);
-                            }
-                            else if (neighborPlate != null)
-                            {
-                                Vector2Int neighborCell = new Vector2Int(neighborX, neighborZ);
-                                if (!alreadyInQueue.Contains(neighborCell))
+                                // BỘ LỌC 3: Đĩa chứa bánh thừa bị đẩy đi bắt buộc phải nằm trong phạm vi 4 hướng đĩa mới đặt
+                                if (dest.x != -1 && (Mathf.Abs(dest.x - startX) + Mathf.Abs(dest.y - startZ) <= 1))
                                 {
-                                    cellsToCheck.Enqueue(neighborCell);
-                                    alreadyInQueue.Add(neighborCell);
+                                    PizzaPlate destPlate = GetPlateAt(dest.x, dest.y);
+                                    if (destPlate != null)
+                                    {
+                                        destPlate.GetSlices().Add(outcast);
+                                        targetSlices.RemoveAt(i);
+
+                                        StartCoroutine(AnimateSliceTransferCoroutine(targetPlate.transform.position, destPlate.transform.position, outcast, destPlate));
+
+                                        destPlate.UpdateVisuals();
+                                        CheckAndExecuteCombo(dest.x, dest.y);
+
+                                        if (!alreadyInQueue.Contains(dest))
+                                        {
+                                            cellsToCheck.Enqueue(dest);
+                                            alreadyInQueue.Add(dest);
+                                        }
+                                    }
                                 }
+                            }
+                        }
+                        targetPlate.UpdateVisuals();
+
+                        // 2. THU HÚT CÁC LÁT BÁNH CÙNG LOẠI TỪ HÀNG XÓM VÀO ĐĨA TIẾP NHẬN
+                        bool targetPlateChanged = false;
+
+                        foreach (Vector2Int dir in directions)
+                        {
+                            int neighborX = targetCell.x + dir.x;
+                            int neighborZ = targetCell.y + dir.y;
+                            Vector2Int neighborCell = new Vector2Int(neighborX, neighborZ);
+
+                            // BỘ LỌC 4: CHẶN ĐĨA THỨ 3 - Không cho phép hút bánh từ những ô nằm ngoài 4 hướng của đĩa mới đặt
+                            if (Mathf.Abs(neighborX - startX) + Mathf.Abs(neighborZ - startZ) > 1) continue;
+
+                            PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
+                            if (neighborPlate == null || neighborPlate == targetPlate) continue;
+
+                            List<ToppingType> neighborSlices = neighborPlate.GetSlices();
+                            bool isPulled = false;
+
+                            for (int j = neighborSlices.Count - 1; j >= 0; j--)
+                            {
+                                int targetCount = targetPlate.GetSlices().Count;
+                                bool targetIsPure = targetPlate.GetSlices().All(t => t == topping);
+                                int maxAllowed = targetIsPure ? 6 : 5;
+
+                                if (targetCount >= maxAllowed) break;
+
+                                if (neighborSlices[j] == topping)
+                                {
+                                    targetPlate.GetSlices().Add(topping);
+                                    neighborSlices.RemoveAt(j);
+                                    isPulled = true;
+                                    targetPlateChanged = true;
+
+                                    StartCoroutine(AnimateSliceTransferCoroutine(neighborPlate.transform.position, targetPlate.transform.position, topping, targetPlate));
+
+                                    if (!alreadyInQueue.Contains(neighborCell))
+                                    {
+                                        cellsToCheck.Enqueue(neighborCell);
+                                        alreadyInQueue.Add(neighborCell);
+                                    }
+                                }
+                            }
+
+                            if (isPulled)
+                            {
+                                neighborPlate.UpdateVisuals();
+                                if (neighborPlate.GetSlices().Count == 0)
+                                {
+                                    DestroyGridPlate(neighborX, neighborZ);
+                                }
+                            }
+                        }
+
+                        if (targetPlateChanged)
+                        {
+                            targetPlate.UpdateVisuals();
+                            CheckAndExecuteCombo(targetCell.x, targetCell.y);
+                            if (!alreadyInQueue.Contains(targetCell))
+                            {
+                                cellsToCheck.Enqueue(targetCell);
+                                alreadyInQueue.Add(targetCell);
                             }
                         }
                     }
                 }
             }
-
-            if (currentPlate == null || currentPlate.GetSlices().Count == 0)
+            currentPlate = GetPlateAt(x, z);
+            if (currentPlate != null && currentPlate.GetSlices().Count == 0)
             {
                 DestroyGridPlate(x, z);
-                continue;
-            }
-
-            // --- PHASE 2: ĐĨA HIỆN TẠI "HÚT" BÁNH (PHÂN TÁCH THEO VỊ) ---
-            if (currentPlate != null && currentPlate.GetSlices().Count > 0 && currentPlate.GetSlices().Count < 6)
-            {
-                List<ToppingType> uniqueToppings = currentPlate.GetSlices()
-                    .Where(t => t != ToppingType.None)
-                    .Distinct()
-                    .ToList();
-
-                // Duyệt qua từng vị trên đĩa tâm để đi hút từ hàng xóm về một cách có chọn lọc
-                foreach (ToppingType topping in uniqueToppings)
-                {
-                    if (currentPlate == null || currentPlate.GetSlices().Count >= 6) break;
-
-                    List<NeighborInfo> validPullNeighbors = new List<NeighborInfo>();
-
-                    foreach (Vector2Int dir in directions)
-                    {
-                        int neighborX = x + dir.x;
-                        int neighborZ = z + dir.y;
-
-                        PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
-                        if (neighborPlate == null || neighborPlate.GetSlices().Count == 0) continue;
-
-                        if (neighborPlate.GetSlices().Contains(topping))
-                        {
-                            validPullNeighbors.Add(new NeighborInfo { plate = neighborPlate, x = neighborX, z = neighborZ });
-                        }
-                    }
-
-                    // Ưu tiên hút từ đĩa có chứa nhiều lát của CHÍNH VỊ NÀY nhất trước
-                    validPullNeighbors.Sort((a, b) =>
-                        b.plate.GetSlices().Count(t => t == topping).CompareTo(a.plate.GetSlices().Count(t => t == topping))
-                    );
-
-                    foreach (var targetNeighbor in validPullNeighbors)
-                    {
-                        if (currentPlate == null || currentPlate.GetSlices().Count >= 6) break;
-
-                        int neighborX = targetNeighbor.x;
-                        int neighborZ = targetNeighbor.z;
-                        PizzaPlate neighborPlate = GetPlateAt(neighborX, neighborZ);
-                        if (neighborPlate == null || neighborPlate.GetSlices().Count == 0) continue;
-
-                        List<ToppingType> currentSlices = currentPlate.GetSlices();
-                        List<ToppingType> neighborSlices = neighborPlate.GetSlices();
-                        bool isPulled = false;
-
-                        // Chỉ hút lát bánh có đúng vị `topping` đang xét
-                        for (int i = neighborSlices.Count - 1; i >= 0; i--)
-                        {
-                            if (currentSlices.Count >= 6) break;
-
-                            if (neighborSlices[i] == topping)
-                            {
-                                currentSlices.Add(topping);
-                                neighborSlices.RemoveAt(i);
-                                isPulled = true;
-                            }
-                        }
-
-                        if (isPulled)
-                        {
-                            currentPlate.UpdateVisuals();
-                            neighborPlate.UpdateVisuals();
-
-                            if (neighborSlices.Count == 0)
-                            {
-                                DestroyGridPlate(neighborX, neighborZ);
-                            }
-                            else
-                            {
-                                Vector2Int neighborCell = new Vector2Int(neighborX, neighborZ);
-                                if (!alreadyInQueue.Contains(neighborCell))
-                                {
-                                    cellsToCheck.Enqueue(neighborCell);
-                                    alreadyInQueue.Add(neighborCell);
-                                }
-                            }
-
-                            Vector2Int selfCell = new Vector2Int(x, z);
-                            if (!alreadyInQueue.Contains(selfCell))
-                            {
-                                cellsToCheck.Enqueue(selfCell);
-                                alreadyInQueue.Add(selfCell);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Kiểm tra combo cuối cùng cho đĩa tâm
-            if (currentPlate != null)
-            {
-                CheckAndExecuteCombo(x, z);
-
-                currentPlate = GetPlateAt(x, z);
-                if (currentPlate != null && currentPlate.GetSlices().Count == 0)
-                {
-                    DestroyGridPlate(x, z);
-                }
             }
         }
     }
 
     /// <summary>
-    /// ĐVÀO POOL: Đã chuyển đổi hoàn toàn từ Destroy sang ReturnToPool ngầm
+    /// SỬA LỖI 2: Chỉ cho phép đĩa hỗn hợp chứa tối đa 5 lát khi nhận bánh thừa để tránh deadlock đầy đĩa hỗn hợp
     /// </summary>
+    /// <summary>
+    /// Tìm kiếm trong 4 ô hàng xóm xem đĩa nào tối ưu nhất để gom loại Topping này về.
+    /// </summary>
+    private Vector2Int FindBestTargetForTopping(int startX, int startZ, ToppingType topping)
+    {
+        // 4 hướng: Trên, Dưới, Trái, Phải
+        int[] dx = { 0, 0, -1, 1 };
+        int[] dz = { 1, -1, 0, 0 };
+
+        Vector2Int bestTarget = new Vector2Int(-1, -1);
+        int maxMatchingSlices = -1;
+
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = startX + dx[i];
+            int nz = startZ + dz[i];
+
+            // Lấy đĩa ở ô hàng xóm
+            PizzaPlate neighborPlate = GetPlateAt(nx, nz);
+            if (neighborPlate != null)
+            {
+                // Đếm số lát bánh cùng loại (vị) đang có trên đĩa hàng xóm này
+                int matchCount = neighborPlate.GetSlices().Count(t => t == topping);
+                int totalSlices = neighborPlate.GetSlices().Count;
+
+                // Nếu đĩa hàng xóm có chứa vị này và đĩa đó chưa bị đầy (dưới 6 lát)
+                if (matchCount > 0 && totalSlices < 6)
+                {
+                    // Ưu tiên chọn đĩa nào đang có nhiều lát cùng vị nhất để gom về một mối
+                    if (matchCount > maxMatchingSlices)
+                    {
+                        maxMatchingSlices = matchCount;
+                        bestTarget = new Vector2Int(nx, nz);
+                    }
+                }
+            }
+        }
+
+        // Nếu không tìm thấy đĩa hàng xóm nào có sẵn vị này, trả về (-1, -1) để bỏ qua
+        return bestTarget;
+    }
+    /// <summary>
+    /// Tìm kiếm ô hàng xóm phù hợp để chuyển (evict) các lát bánh không đồng nhất sang đó.
+    /// </summary>
+    private Vector2Int FindEvictDestination(int startX, int startZ, ToppingType topping)
+    {
+        // 4 hướng di chuyển cơ bản: Trên, Dưới, Trái, Phải
+        int[] dx = { 0, 0, -1, 1 };
+        int[] dz = { 1, -1, 0, 0 };
+
+        Vector2Int bestEvictTarget = new Vector2Int(-1, -1);
+        int minSlicesCount = 7; // Khởi tạo lớn hơn số lượng lát tối đa trên một đĩa (6 lát)
+
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = startX + dx[i];
+            int nz = startZ + dz[i];
+
+            // Lấy đĩa ở ô hàng xóm
+            PizzaPlate neighborPlate = GetPlateAt(nx, nz);
+
+            if (neighborPlate != null)
+            {
+                int totalSlices = neighborPlate.GetSlices().Count;
+
+                // Điều kiện 1: Đĩa hàng xóm phải chưa bị đầy (dưới 6 lát)
+                if (totalSlices < 6)
+                {
+                    // Ưu tiên 1a: Đĩa hàng xóm đã có sẵn loại Topping này rồi -> Gom vào rất hợp lý
+                    if (neighborPlate.GetSlices().Contains(topping))
+                    {
+                        return new Vector2Int(nx, nz); // Trả về ngay lập tức vì đây là ô tối ưu nhất
+                    }
+
+                    // Ưu tiên 1b: Nếu không có đĩa nào trùng vị, tìm đĩa nào đang trống hoặc ít bánh nhất để gửi tạm
+                    if (totalSlices < minSlicesCount)
+                    {
+                        minSlicesCount = totalSlices;
+                        bestEvictTarget = new Vector2Int(nx, nz);
+                    }
+                }
+            }
+        }
+
+        // Trả về ô hàng xóm ít bánh nhất tìm được, hoặc (-1, -1) nếu tất cả xung quanh đều kín chỗ
+        return bestEvictTarget;
+    }
+
     private void DestroyGridPlate(int x, int z)
     {
         if (gridPlateMatrix[x, z] != null)
         {
-            // ĐÃ SỬA: Thu hồi đĩa về Pool thay vì phá hủy nó
             ReturnPlateToPool(gridPlateMatrix[x, z].gameObject);
             gridPlateMatrix[x, z] = null;
         }
@@ -526,11 +553,113 @@ public class GridManager : MonoBehaviour
 
         if (isPerfectCombo)
         {
-            Debug.Log($"<color=cyan>[Combo] Đĩa bánh tại [{x},{z}] hoàn thành vị {firstType}!</color>");
+            Debug.Log($"<color=cyan>[Combo Kích Hoạt] Đĩa tại [{x},{z}] đã đủ 6 lát vị {firstType}!</color>");
+            GameObject comboPlateObj = gridPlateMatrix[x, z].gameObject;
 
-            // ĐÃ SỬA: Thu hồi về Pool khi nổ Combo bánh
-            ReturnPlateToPool(gridPlateMatrix[x, z].gameObject);
             gridPlateMatrix[x, z] = null;
+
+            StartCoroutine(VisualShrinkAndPoolCoroutine(comboPlateObj, 0.22f));
+        }
+    }
+
+    private IEnumerator VisualBounceCoroutine(Transform target, float intensity, float duration)
+    {
+        if (target == null) yield break;
+
+        Vector3 originalScale = Vector3.one;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (target == null) yield break;
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+            float scaleOffset = Mathf.Sin(progress * Mathf.PI) * intensity;
+            target.localScale = originalScale + new Vector3(scaleOffset, scaleOffset, scaleOffset);
+
+            yield return null;
+        }
+
+        if (target != null) target.localScale = originalScale;
+    }
+
+    private IEnumerator VisualShrinkAndPoolCoroutine(GameObject plateObj, float delay = 0f)
+    {
+        if (plateObj == null) yield break;
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        Transform target = plateObj.transform;
+        Vector3 startScale = target.localScale;
+        float duration = 0.2f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (target == null) yield break;
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            target.localScale = Vector3.Lerp(startScale, Vector3.zero, Mathf.SmoothStep(0f, 1f, progress));
+            yield return null;
+        }
+
+        // Đảm bảo Reset lại Scale về 1 trước khi trả về Pool để lần sau lấy ra không bị biến dạng kích thước
+        target.localScale = Vector3.one;
+        ReturnPlateToPool(plateObj);
+    }
+
+    private IEnumerator AnimateSliceTransferCoroutine(Vector3 startPos, Vector3 endPos, ToppingType topping, PizzaPlate targetPlate)
+    {
+        GameObject dummySlice = new GameObject($"Flying_{topping}");
+
+        GameObject prefab = GetSlicePrefab(topping);
+        GameObject visualSlice = null;
+
+        if (prefab != null)
+        {
+            visualSlice = Instantiate(prefab, dummySlice.transform);
+            visualSlice.transform.localPosition = Vector3.zero;
+            visualSlice.transform.localRotation = Quaternion.identity;
+            visualSlice.transform.localScale = prefab.transform.localScale;
+        }
+        else
+        {
+            Debug.LogWarning($"[Cảnh báo] Chưa gán Prefab cho loại bánh: {topping} trong Inspector!");
+            visualSlice = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visualSlice.transform.SetParent(dummySlice.transform);
+            visualSlice.transform.localPosition = Vector3.zero;
+            visualSlice.transform.localScale = new Vector3(1f, 0.2f, 1f);
+        }
+
+        float duration = 0.22f;
+        float elapsed = 0f;
+        float peakHeight = 1.8f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+            float smoothProgress = Mathf.SmoothStep(0f, 1f, progress);
+
+            Vector3 currentPos = Vector3.Lerp(startPos, endPos, smoothProgress);
+            currentPos.y += Mathf.Sin(smoothProgress * Mathf.PI) * peakHeight;
+
+            if (dummySlice != null)
+            {
+                dummySlice.transform.position = currentPos;
+            }
+            yield return null;
+        }
+
+        Destroy(dummySlice);
+
+        if (targetPlate != null && targetPlate.gameObject.activeInHierarchy)
+        {
+            targetPlate.UpdateVisuals();
+            StartCoroutine(VisualBounceCoroutine(targetPlate.transform, 0.12f, 0.12f));
         }
     }
 }

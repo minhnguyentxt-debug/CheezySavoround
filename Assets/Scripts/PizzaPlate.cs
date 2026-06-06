@@ -6,12 +6,24 @@ public class PizzaPlate : MonoBehaviour
 {
     [Header("Pizza Slices Data")]
     [SerializeField] private List<ToppingType> slices = new List<ToppingType>();
-
+        
     public int CurrentX { get; set; } = -1;
     public int CurrentZ { get; set; } = -1;
 
     private const int MAX_SLOTS = 6;
+    /// <summary>
+    /// Hàm dọn sạch toàn bộ lát bánh trên đĩa (Cả logic lẫn hiển thị)
+    /// </summary>
+    public void ClearAllSlices()
+    {
+        slices.Clear();
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
 
+        Debug.Log($"Đĩa {gameObject.name} đã được dọn sạch hoàn toàn!");
+    }
     public void SetupPlate(List<ToppingType> newSlices, int x, int z)
     {
         this.slices = newSlices;
