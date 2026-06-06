@@ -20,6 +20,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject slotPrefab;
     [SerializeField] private GameObject platePrefab;
 
+    [SerializeField] private GameObject floatingTextPrefab;
+
     private GameObject[,] gridMatrix;
     private PizzaPlate[,] gridPlateMatrix;
 
@@ -28,6 +30,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int initialPoolSize = 10;
 
     [System.Serializable]
+
     public struct PizzaSlicePrefabData
     {
         public ToppingType toppingType;
@@ -554,14 +557,23 @@ public class GridManager : MonoBehaviour
         if (isPerfectCombo)
         {
             Debug.Log($"<color=cyan>[Combo Kích Hoạt] Đĩa tại [{x},{z}] đã đủ 6 lát vị {firstType}!</color>");
+            GameEventSystem.OnPizzaCompleted?.Invoke(firstType);
+
             GameObject comboPlateObj = gridPlateMatrix[x, z].gameObject;
-
-            gridPlateMatrix[x, z] = null;
-
+            gridPlateMatrix[x, z] = null; 
+            Vector3 spawnPos = comboPlateObj.transform.position + new Vector3(0, 2f, -1f); 
+            ShowFloatingScore("+100", spawnPos);
             StartCoroutine(VisualShrinkAndPoolCoroutine(comboPlateObj, 0.22f));
         }
     }
+    private void ShowFloatingScore(string text, Vector3 position)
+    {
+        if (floatingTextPrefab == null) return;
 
+        // Instantiate tại vị trí (x, z) của đĩa bánh
+        GameObject go = Instantiate(floatingTextPrefab, position, Quaternion.identity);
+        go.GetComponent<FloatingText>().Setup(text, position);
+    }
     private IEnumerator VisualBounceCoroutine(Transform target, float intensity, float duration)
     {
         if (target == null) yield break;
