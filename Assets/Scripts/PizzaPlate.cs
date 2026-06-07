@@ -62,21 +62,17 @@ public class PizzaPlate : MonoBehaviour
     /// </summary>
     public void UpdateVisuals()
     {
-        // 1. DẠ TRÚC SỬA ĐỔI: Dùng DestroyImmediate thay vì Destroy thông thường 
-        // để ép các lát bánh cũ biến mất NGAY LẬP TỨC trong cùng 1 frame, tránh lỗi Pooling mang Visual cũ sang đĩa mới.
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
             Transform child = transform.GetChild(i);
             if (child.name.StartsWith("Slice_"))
             {
-                DestroyImmediate(child.gameObject); // Xóa ngay lập tức, không chờ đợi cuối frame
+                DestroyImmediate(child.gameObject);
             }
         }
 
-        // Nếu đĩa không có bánh, dừng lại luôn (Đĩa hoàn toàn trống sạch sẽ)
         if (slices == null || slices.Count == 0) return;
 
-        // 2. Duyệt qua danh sách dữ liệu để xếp các lát bánh lên đĩa thực thể
         for (int i = 0; i < slices.Count; i++)
         {
             ToppingType sliceColor = slices[i];
@@ -88,7 +84,6 @@ public class PizzaPlate : MonoBehaviour
             float angleY = i * (360f / MAX_SLOTS);
             GameObject sliceObj;
 
-            // 3. Nếu tìm thấy Model 3D chuẩn trong thư mục Resources
             if (modelPrefab != null)
             {
                 sliceObj = Instantiate(modelPrefab, transform);
@@ -97,7 +92,6 @@ public class PizzaPlate : MonoBehaviour
                 sliceObj.transform.localPosition = new Vector3(0f, 0.5f, 0f);
                 sliceObj.transform.localEulerAngles = new Vector3(0f, angleY, 0f);
             }
-            // 4. BIỆN PHÁP PHÒNG THỦ: Tự sinh khối hình học dẹt nhuộm màu
             else
             {
                 sliceObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);

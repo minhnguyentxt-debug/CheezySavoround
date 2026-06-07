@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GridManager : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class GridManager : MonoBehaviour
     private GameObject[,] gridMatrix;
     private PizzaPlate[,] gridPlateMatrix;
 
+    public GameObject gameOverPanel;
+        
     private Queue<GameObject> platePool = new Queue<GameObject>();
     [Header("Pooling Config")]
     [SerializeField] private int initialPoolSize = 10;
@@ -243,10 +246,10 @@ public class GridManager : MonoBehaviour
         draggedPlate.CurrentX = targetX;
         draggedPlate.CurrentZ = targetZ;
         draggedPlate.transform.SetParent(transform);
-
         draggedPlate.transform.position = gridMatrix[targetX, targetZ].transform.position;
 
         gridPlateMatrix[targetX, targetZ] = draggedPlate;
+        CheckGameOver();
     }
 
     public PizzaPlate GetPlateAt(int x, int z)
@@ -565,6 +568,46 @@ public class GridManager : MonoBehaviour
             ShowFloatingScore("+100", spawnPos);
             StartCoroutine(VisualShrinkAndPoolCoroutine(comboPlateObj, 0.22f));
         }
+    }
+    private void CheckGameOver()
+    {
+        bool hasEmptySlot = false;
+
+        // Duyệt qua ma trận đĩa
+        foreach (var plate in gridPlateMatrix)
+        {
+            if (plate == null)
+            {
+                hasEmptySlot = true;
+                break;
+            }
+        }
+
+        if (!hasEmptySlot)
+        {
+            TriggerGameOver();
+        }
+    }
+
+    private void TriggerGameOver()
+    {
+        // Đảm bảo không bị check trùng lặp khi game đã dừng
+        if (gameOverPanel.activeSelf) return;
+
+        Debug.Log("Game Over! Không còn chỗ trống.");
+        gameOverPanel.SetActive(true);
+
+        // Tùy chọn: Dừng tất cả các coroutine đang chạy nếu cần thiết
+        StopAllCoroutines();
+
+        Time.timeScale = 0f;
+    }
+
+    // Hàm gắn vào Button Replay
+    public void ReplayGame()
+    {
+        Time.timeScale = 1f; // Chạy lại thời gian
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Load lại scene hiện tại
     }
     private void ShowFloatingScore(string text, Vector3 position)
     {

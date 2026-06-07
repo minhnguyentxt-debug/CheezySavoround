@@ -3,20 +3,45 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI scoreText;
-    [SerializeField] private TextMeshProUGUI highScoreText;
+    [Header("HUD (Góc màn hình)")]
+    [SerializeField] private GameObject hudPanel;
+    [SerializeField] private TextMeshProUGUI hudScoreText;
+    [SerializeField] private TextMeshProUGUI hudHighScoreText; // Thêm biến này
+
+    [Header("GameOver UI")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private TextMeshProUGUI finalScoreText;
+    [SerializeField] private TextMeshProUGUI finalHighScoreText;
 
     private void OnEnable()
     {
-        // Lắng nghe các event từ GameEventSystem
-        GameEventSystem.OnScoreChanged += (score) => scoreText.text = $"Score: {score}";
-        GameEventSystem.OnHighScoreChanged += (highScore) => highScoreText.text = $"Best: {highScore}";
+        GameEventSystem.OnScoreChanged += UpdateScoreUI;
+        GameEventSystem.OnHighScoreChanged += UpdateHighScoreUI;
     }
 
     private void OnDisable()
     {
-        // Hủy lắng nghe để tránh lỗi
-        GameEventSystem.OnScoreChanged -= (score) => scoreText.text = $"Score: {score}";
-        GameEventSystem.OnHighScoreChanged -= (highScore) => highScoreText.text = $"Best: {highScore}";
+        GameEventSystem.OnScoreChanged -= UpdateScoreUI;
+        GameEventSystem.OnHighScoreChanged -= UpdateHighScoreUI;
+    }
+
+    private void UpdateScoreUI(int score)
+    {
+        // Cập nhật điểm hiện tại cho cả HUD và Bảng Game Over
+        if (hudScoreText != null) hudScoreText.text = $"Score: {score}";
+        if (finalScoreText != null) finalScoreText.text = $"SCORE: {score}";
+    }
+
+    private void UpdateHighScoreUI(int highScore)
+    {
+        // Cập nhật điểm cao nhất cho cả HUD và Bảng Game Over
+        if (hudHighScoreText != null) hudHighScoreText.text = $"Best: {highScore}";
+        if (finalHighScoreText != null) finalHighScoreText.text = $"BEST: {highScore}";
+    }
+
+    public void ShowGameOver()
+    {
+        if (hudPanel != null) hudPanel.SetActive(false);
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
     }
 }
