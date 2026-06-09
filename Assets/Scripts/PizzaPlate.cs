@@ -160,7 +160,17 @@ public class PizzaPlate : MonoBehaviour
     {
         GameEventSystem.OnSkinSelected -= ApplyNewSkinMaterial;
     }
-
+    /// <summary>
+    /// Thêm một lát bánh mới vào danh sách và cập nhật lại hình ảnh trên đĩa.
+    /// </summary>
+    public void AddSlice(ToppingType topping)
+    {
+        if (slices.Count < MAX_SLOTS)
+        {
+            slices.Add(topping);
+            UpdateVisuals(); // Gọi hàm này để spawn model lát bánh mới hiển thị lên
+        }
+    }
     private void ApplyNewSkinMaterial(string skinId)
     {
         // Renderer plateRenderer = GetComponent<Renderer>();

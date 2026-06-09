@@ -27,7 +27,10 @@ public class ScoreManager : MonoBehaviour
         // Hủy đăng ký để tránh tràn bộ nhớ (Memory Leak)
         GameEventSystem.OnPizzaCompleted -= AddRewards;
     }
-
+    private void Awake()
+    {
+        DontDestroyOnLoad(this.gameObject);
+    }
     private void AddRewards(ToppingType topping)
     {
         // 2. Thay đổi logic: Cộng 100 điểm theo yêu cầu mới của bạn (Vàng giữ nguyên +5 hoặc tùy chỉnh)

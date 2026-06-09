@@ -106,7 +106,27 @@ public class GridManager : MonoBehaviour
 
         platePool.Enqueue(plateObj);
     }
+    public void OnCellClick(int x, int z)
+    {
+        ItemManager itemManager = FindAnyObjectByType<ItemManager>();
 
+        if (itemManager != null && itemManager.selectedItem != null)
+        {
+            itemManager.ExecuteEffect(x, z);
+
+            return;
+        }
+        PizzaPlate clickedPlate = GetPlateAt(x, z);
+
+        if (clickedPlate != null)
+        {
+            Debug.Log($"Đã chọn đĩa tại: [{x}, {z}]");
+        }
+        else
+        {
+            Debug.Log($"Ô trống tại: [{x}, {z}]");
+        }
+    }
     private void SpawnRandomTestPlates(int count)
     {
         int spawned = 0;
@@ -162,6 +182,9 @@ public class GridManager : MonoBehaviour
                 Vector3 spawnPosition = new Vector3(x * stepX, 0f, z * stepZ) + originOffset + transform.position;
                 GameObject newSlot = Instantiate(slotPrefab, spawnPosition, Quaternion.identity, transform);
                 newSlot.name = $"Slot_[{x},{z}]";
+
+                GridSlot slotScript = newSlot.AddComponent<GridSlot>();
+                slotScript.Setup(x, z, this); // Gán tọa độ và cho phép nó gọi lại GridManager
 
                 newSlot.transform.localScale = new Vector3(cellSize, newSlot.transform.localScale.y, cellSize);
                 gridMatrix[x, z] = newSlot;
@@ -438,16 +461,93 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+    public void RemovePlateAt(int x, int z)
+    {
+        PizzaPlate plate = GetPlateAt(x, z);
+        if (plate != null)
+        {
+            // Trả về pool và xóa khỏi matrix
+            DestroyGridPlate(x, z);
+            Debug.Log($"Đã xóa đĩa tại [{x},{z}]");
+        }
+    }
 
-    /// <summary>
-    /// SỬA LỖI 2: Chỉ cho phép đĩa hỗn hợp chứa tối đa 5 lát khi nhận bánh thừa để tránh deadlock đầy đĩa hỗn hợp
-    /// </summary>
+    // Hàm hoán đổi vị trí 2 đĩa
+    public void SwapPlates(int x1, int z1, int x2, int z2)
+    {
+        PizzaPlate p1 = GetPlateAt(x1, z1);
+        PizzaPlate p2 = GetPlateAt(x2, z2);
+
+        // Swap trong matrix
+        gridPlateMatrix[x1, z1] = p2;
+        gridPlateMatrix[x2, z2] = p1;
+
+        // Cập nhật tọa độ logic và vị trí thực tế
+        if (p1 != null)
+        {
+            p1.CurrentX = x2; p1.CurrentZ = z2;
+            p1.transform.position = gridMatrix[x2, z2].transform.position;
+        }
+        if (p2 != null)
+        {
+            p2.CurrentX = x1; p2.CurrentZ = z1;
+            p2.transform.position = gridMatrix[x1, z1].transform.position;
+        }
+    }
+    public void AddSauceToPlate(int x, int z)
+    {
+        PizzaPlate plate = GetPlateAt(x, z);
+        if (plate != null)
+        {
+            if (plate.GetSlices().Count > 0)
+            {
+                plate.GetSlices().Add(plate.GetSlices()[0]);
+                plate.UpdateVisuals();
+                CheckAndExecuteCombo(x, z);
+            }
+        }
+    }
+
+    public void CreatePerfectFitPlateAt(int x1, int z1, int x2, int z2)
+    {
+        PizzaPlate sourcePlate = GetPlateAt(x1, z1);
+        PizzaPlate targetPlate = GetPlateAt(x2, z2);
+
+        if (sourcePlate == null) return;
+
+        // 1. TRƯỜNG HỢP MERGE (Nếu đã có đĩa ở đích)
+        if (targetPlate != null && targetPlate != sourcePlate)
+        {
+            foreach (var slice in sourcePlate.GetSlices())
+            {
+                if (targetPlate.GetSlices().Count < 6)
+                    targetPlate.AddSlice(slice);
+            }
+
+            RemovePlateAt(x1, z1);
+            targetPlate.UpdateVisuals();
+            StartCoroutine(DelayedMergeCoroutine(x2, z2));
+            Debug.Log("Đã Merge và kích hoạt gộp.");
+        }
+        else if (targetPlate == null)
+        {
+            GameObject newPlateObj = GetPlateFromPool(gridMatrix[x2, z2].transform.position, Quaternion.identity);
+            PizzaPlate newPlate = newPlateObj.GetComponent<PizzaPlate>();
+
+            List<ToppingType> newSlices = new List<ToppingType>(sourcePlate.GetSlices());
+            newPlate.SetupPlate(newSlices, x2, z2);
+
+            gridPlateMatrix[x2, z2] = newPlate;
+            StartCoroutine(DelayedMergeCoroutine(x2, z2));
+
+            Debug.Log("Đã tạo đĩa mới và kích hoạt gộp tại đích!");
+        }
+    }
     /// <summary>
     /// Tìm kiếm trong 4 ô hàng xóm xem đĩa nào tối ưu nhất để gom loại Topping này về.
     /// </summary>
     private Vector2Int FindBestTargetForTopping(int startX, int startZ, ToppingType topping)
     {
-        // 4 hướng: Trên, Dưới, Trái, Phải
         int[] dx = { 0, 0, -1, 1 };
         int[] dz = { 1, -1, 0, 0 };
 
@@ -715,6 +815,19 @@ public class GridManager : MonoBehaviour
         {
             targetPlate.UpdateVisuals();
             StartCoroutine(VisualBounceCoroutine(targetPlate.transform, 0.12f, 0.12f));
+        }
+    }
+    private IEnumerator DelayedMergeCoroutine(int x, int z)
+    {
+        // Đợi 1 giây
+        yield return new WaitForSeconds(1.0f);
+
+        // Sau khi đợi xong, kiểm tra nếu đĩa vẫn còn tồn tại thì mới gộp
+        PizzaPlate plate = GetPlateAt(x, z);
+        if (plate != null)
+        {
+            Debug.Log($"[GridManager] Đã xong 1s, bắt đầu gộp tại [{x}, {z}]");
+            CheckAndMergePizza(x, z);
         }
     }
 }
