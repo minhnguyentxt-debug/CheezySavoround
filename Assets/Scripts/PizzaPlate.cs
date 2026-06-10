@@ -176,4 +176,15 @@ public class PizzaPlate : MonoBehaviour
         // Renderer plateRenderer = GetComponent<Renderer>();
         // plateRenderer.material = ...
     }
+    // Giả sử trong PizzaPlate.cs bạn đang lưu danh sách lát bánh bằng biến này:
+    // public List<ToppingType> currentSlices; 
+
+    /// <summary>
+    /// Hàm xuất danh sách các lát bánh hiện có trên đĩa để phục vụ việc Save game
+    /// </summary>
+    public List<ToppingType> GetSlicesOnPlate()
+    {
+        // Bạn hãy đổi 'currentSlices' thành đúng tên biến List lát bánh thực tế trong code của bạn
+        return slices;
+    }
 }

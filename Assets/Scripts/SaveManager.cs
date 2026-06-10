@@ -1,5 +1,14 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+
+// 1. Chỉ giữ lại DUY NHẤT một class PlateData nằm ở ngoài như thế này:
+[System.Serializable]
+public class PizzaPlateSaveData
+{
+    public int X, Z;
+    public List<ToppingType> Slices;
+}
 
 public class SaveManager : MonoBehaviour
 {
@@ -7,22 +16,37 @@ public class SaveManager : MonoBehaviour
     public GameData PlayerData;
 
     private string savePath;
-    private const string encryptionKey = "PizzaSecretKey123"; // Khóa mã hóa dữ liệu
+    private const string encryptionKey = "PizzaSecretKey123";
 
     private void Awake()
     {
-        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
-        else { Destroy(gameObject); return; }
+        if (Instance == null) 
+        {
+            Instance = this; 
+            DontDestroyOnLoad(gameObject); 
+        }
+        else 
+        { 
+            Destroy(gameObject); return; 
+        }
 
         savePath = Path.Combine(Application.persistentDataPath, "pizza_player_data.dat");
         LoadGame();
     }
 
+    private void OnApplicationQuit() { SaveGame(); }
+    private void OnApplicationPause(bool pauseStatus) { if (pauseStatus) SaveGame(); }
+    public void SaveGameNow() { SaveGame(); Debug.Log("[SaveManager] Dữ liệu đã được lưu chủ động."); }
+
+    // ====================================================================
+    // KHU VỰC CẦN KIỂM TRA: Hãy đảm bảo KHÔNG CÒN đoạn code:
+    // public class PlateData { ... } nào nằm ở đây nữa!
+    // ====================================================================
+
     public void SaveGame()
     {
         string json = JsonUtility.ToJson(PlayerData, true);
-        string encryptedJson = EncryptDecrypt(json); // Mã hóa chuỗi JSON trước khi ghi file
-
+        string encryptedJson = EncryptDecrypt(json);
         File.WriteAllText(savePath, encryptedJson);
         Debug.Log("[SaveManager] Đã lưu dữ liệu bảo mật thành công!");
     }
@@ -32,26 +56,25 @@ public class SaveManager : MonoBehaviour
         if (File.Exists(savePath))
         {
             string encryptedJson = File.ReadAllText(savePath);
-            string decryptedJson = EncryptDecrypt(encryptedJson); // Giải mã dữ liệu khi đọc
-
+            string decryptedJson = EncryptDecrypt(encryptedJson);
             PlayerData = JsonUtility.FromJson<GameData>(decryptedJson);
             Debug.Log("[SaveManager] Đã tải dữ liệu cũ lên thành công!");
         }
         else
         {
-            PlayerData = new GameData(); // Tạo mới nếu chưa có file lưu
+            PlayerData = new GameData();
             SaveGame();
         }
     }
 
-    // Thuật toán mã hóa/giải mã XOR Bitwise biến đổi chuỗi JSON thành các ký tự không đọc được
     private string EncryptDecrypt(string data)
     {
-        string result = "";
-        for (int i = 0; i < data.Length; i++)
+        char[] chars = data.ToCharArray();
+        int keyLength = encryptionKey.Length;
+        for (int i = 0; i < chars.Length; i++)
         {
-            result += (char)(data[i] ^ encryptionKey[i % encryptionKey.Length]);
+            chars[i] = (char)(chars[i] ^ encryptionKey[i % keyLength]);
         }
-        return result;
+        return new string(chars);
     }
 }

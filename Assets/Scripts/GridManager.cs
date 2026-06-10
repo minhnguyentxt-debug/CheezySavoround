@@ -56,10 +56,18 @@ public class GridManager : MonoBehaviour
     {
         InitializePlatePool();
         GenerateGrid();
-        // LoadLevelFromJSON(1);
-        SpawnRandomTestPlates(5);
-    }
 
+        // KIỂM TRA VÀ TÁI TẠO LƯỚI TỪ FILE SAVE
+        if (SaveManager.Instance != null && SaveManager.Instance.PlayerData.Plates.Count > 0)
+        {
+            LoadSavedPlates();
+        }
+        else
+        {
+            // Nếu không có dữ liệu cũ, sinh 5 đĩa test ngẫu nhiên như cũ
+            SpawnRandomTestPlates(5);
+        }
+    }
     private void InitializePlatePool()
     {
         for (int i = 0; i < initialPoolSize; i++)
@@ -542,6 +550,11 @@ public class GridManager : MonoBehaviour
 
             Debug.Log("Đã tạo đĩa mới và kích hoạt gộp tại đích!");
         }
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.Plates = GetCurrentGridState();
+            SaveManager.Instance.SaveGame();
+        }
     }
     /// <summary>
     /// Tìm kiếm trong 4 ô hàng xóm xem đĩa nào tối ưu nhất để gom loại Topping này về.
@@ -829,5 +842,57 @@ public class GridManager : MonoBehaviour
             Debug.Log($"[GridManager] Đã xong 1s, bắt đầu gộp tại [{x}, {z}]");
             CheckAndMergePizza(x, z);
         }
+    }
+    /// <summary>
+    /// HÀM LƯU: Thu thập toàn bộ đĩa bánh đang có trên lưới chuyển thành List để Save
+    /// </summary>
+    // 1. Sửa kiểu trả về của hàm thành List<PizzaPlateSaveData>
+    public List<PizzaPlateSaveData> GetCurrentGridState()
+    {
+        // 2. Sửa kiểu khởi tạo danh sách thành PizzaPlateSaveData
+        List<PizzaPlateSaveData> currentState = new List<PizzaPlateSaveData>();
+
+        for (int x = 0; x < columns; x++)
+        {
+            for (int z = 0; z < rows; z++)
+            {
+                if (gridPlateMatrix[x, z] != null)
+                {
+                    // 3. Sửa kiểu tạo Object thành PizzaPlateSaveData
+                    PizzaPlateSaveData data = new PizzaPlateSaveData();
+                    data.X = x;
+                    data.Z = z;
+                    data.Slices = gridPlateMatrix[x, z].GetSlicesOnPlate();
+
+                    currentState.Add(data);
+                }
+            }
+        }
+        return currentState;
+    }
+
+    /// <summary>
+    /// HÀM LOAD: Tái tạo lại các đĩa bánh từ dữ liệu đã lưu
+    /// </summary>
+    public void LoadSavedPlates()
+    {
+        // Đổi PlateData thành PizzaPlateSaveData trong vòng lặp foreach
+        foreach (PizzaPlateSaveData plateData in SaveManager.Instance.PlayerData.Plates)
+        {
+            if (plateData.X < 0 || plateData.X >= columns || plateData.Z < 0 || plateData.Z >= rows) continue;
+
+            Vector3 slotPos = gridMatrix[plateData.X, plateData.Z].transform.position;
+
+            GameObject plateObj = GetPlateFromPool(slotPos, Quaternion.identity);
+            plateObj.name = $"Grid_Plate_[{plateData.X},{plateData.Z}]";
+
+            PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
+            if (pizzaPlateScript != null)
+            {
+                pizzaPlateScript.SetupPlate(new List<ToppingType>(plateData.Slices), plateData.X, plateData.Z);
+                gridPlateMatrix[plateData.X, plateData.Z] = pizzaPlateScript;
+            }
+        }
+        Debug.Log("<color=green>[GridManager] Đã tải và tái tạo thành công toàn bộ đĩa bánh cũ!</color>");
     }
 }

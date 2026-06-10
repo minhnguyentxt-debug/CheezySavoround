@@ -7,6 +7,15 @@ public class GameData
     public int gold = 0;
     public string currentSkinId = "Default_Plate";
     public List<string> unlockedSkinIds = new List<string>() { "Default_Plate" };
-    public string lastClaimedTime = ""; // Phục vụ Daily Reward ngày 4-5
+    public string lastClaimedTime = "";
     public int currentStreak = 0;
+    public List<PizzaPlateSaveData> Plates = new List<PizzaPlateSaveData>();
+}
+
+[System.Serializable]
+public class PlateData
+{
+    public int X;
+    public int Z;
+    public List<ToppingType> Slices = new List<ToppingType>();
 }
