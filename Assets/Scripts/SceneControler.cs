@@ -51,11 +51,22 @@ public class SceneController : MonoBehaviour
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.PlayerData.Plates.Clear();
+            SaveManager.Instance.PlayerData.currentLevel = 1; // Reset về màn 1
 
-            ScoreManager.Instance.ResetScoreForNewGame();
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.ResetScoreForNewGame();
+            }
 
             SaveManager.Instance.SaveGame(); // Lưu lại file trống trước khi vào game
         }
+
+        // Reset LevelManager và PlayerPrefs
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.ResetToFirstLevel();
+        }
+        LevelCompleteUI.ResetLevel();
 
         LoadGameScene();
     }

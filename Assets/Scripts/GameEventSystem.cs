@@ -11,4 +11,7 @@ public static class GameEventSystem
     public static Action<string> OnSkinSelected;
     public static System.Action<int> OnCoinsChanged;
     public static System.Action<string, int> OnItemAdded;
+    public static System.Action OnLevelComplete; // Kích hoạt khi đạt đủ targetScore của màn
+    public static System.Action<int> OnLevelChanged; // Kích hoạt khi chuyển sang màn mới (truyền số màn)
+    public static System.Action<int> OnLevelTargetChanged; // Kích hoạt khi load màn mới (truyền targetScore)
 }

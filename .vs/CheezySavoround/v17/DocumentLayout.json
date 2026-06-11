@@ -3,11 +3,15 @@
   "WorkspaceRootPath": "D:\\CheezySavoround\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\interactionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\interactionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scripts\\shopmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\shopmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\shopmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -17,10 +21,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gameeventsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameeventsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\itemmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -74,7 +74,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 17,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -86,7 +86,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "ItemSlotUI.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ItemSlotUI.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\ItemSlotUI.cs",
@@ -94,11 +94,12 @@
               "RelativeToolTip": "Assets\\Scripts\\ItemSlotUI.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAAUwCMAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T14:25:01.841Z"
+              "WhenOpened": "2026-06-11T14:25:01.841Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "InventoryManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\InventoryManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\InventoryManager.cs",
@@ -122,7 +123,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "ShopManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ShopManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\ShopManager.cs",
@@ -130,12 +131,11 @@
               "RelativeToolTip": "Assets\\Scripts\\ShopManager.cs",
               "ViewState": "AgIAAFkAAAAAAAAAAAAuwA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T13:42:18.484Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T13:42:18.484Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "GameEventSystem.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameEventSystem.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\GameEventSystem.cs",
@@ -267,16 +267,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "InteractionManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\InteractionManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\InteractionManager.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\InteractionManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\InteractionManager.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAqwBQAAABNAAAAAAAAAA==",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAqwBUAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-30T06:47:20.353Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-30T06:47:20.353Z"
             }
           ]
         }

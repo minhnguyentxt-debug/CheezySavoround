@@ -8,10 +8,6 @@ public class PizzaPlateSaveData
 {
     public int X, Z;
     public List<ToppingType> Slices;
-    public bool hasParentDoublePlate;
-    public int parentDoublePlateX, parentDoublePlateZ;
-    public float parentDoublePlateYRot;
-    public bool isVertical;
 }
 
 public class SaveManager : MonoBehaviour

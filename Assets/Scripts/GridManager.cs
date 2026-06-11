@@ -62,15 +62,24 @@ public class GridManager : MonoBehaviour
         InitializePlatePool();
         GenerateGrid();
 
-        // KIỂM TRA VÀ TÁI TẠO LƯỚI TỪ FILE SAVE
+        // KIỂM TRA VÀ TÁI TẠO LƯỚI TỪ FILE SAVE (đang chơi dở)
         if (SaveManager.Instance != null && SaveManager.Instance.PlayerData.Plates.Count > 0)
         {
+            // Có save data (đang chơi dở màn) → load lại lưới cũ
             LoadSavedPlates();
+
+            // Đồng bộ targetScore và fire event UI
+            int lv = LevelCompleteUI.GetCurrentLevel(); // Dùng PlayerPrefs làm nguồn chính
+            SyncTargetScoreFromJSON(lv);
         }
         else
         {
-            // Nếu không có dữ liệu cũ, sinh 5 đĩa test ngẫu nhiên như cũ
-            SpawnRandomTestPlates(5);
+            // Không có save → load màn từ PlayerPrefs (nguồn đáng tin cậy nhất)
+            int levelToLoad = LevelCompleteUI.GetCurrentLevel();
+            levelToLoad = Mathf.Clamp(levelToLoad, 1, LevelManager.TotalLevels);
+
+            Debug.Log($"<color=yellow>[GridManager] Đang load màn {levelToLoad} từ PlayerPrefs</color>");
+            LoadLevelFromJSON(levelToLoad);
         }
     }
     private void InitializePlatePool()
@@ -106,21 +115,12 @@ public class GridManager : MonoBehaviour
     {
         if (plateObj == null) return;
 
-        // Bẻ gãy mối quan hệ đĩa đôi nếu có để giải phóng đĩa con còn lại
-        DoublePlate dp = plateObj.GetComponentInParent<DoublePlate>();
-        if (dp != null)
-        {
-            dp.BreakDoublePlate();
-        }
-
         plateObj.SetActive(false);
         plateObj.transform.SetParent(transform);
 
         PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
         if (pizzaPlateScript != null)
         {
-            // Sử dụng ClearAllSlices nếu bạn đã định nghĩa nó trong PizzaPlate, 
-            // hoặc dùng Clear() danh sách logic tùy thuộc cấu trúc của bạn.
             pizzaPlateScript.GetSlices().Clear();
         }
 
@@ -273,14 +273,34 @@ public class GridManager : MonoBehaviour
         return x != -1 && z != -1;
     }
 
-    private void LoadLevelFromJSON(int levelNumber)
+    /// <summary>
+    /// Load màn chơi từ file JSON trong Resources/. 
+    /// Đổi thành public để LevelManager có thể gọi khi cần.
+    /// </summary>
+    public void LoadLevelFromJSON(int levelNumber)
     {
         string fileName = $"Level_{levelNumber:D2}";
         TextAsset jsonTextAsset = Resources.Load<TextAsset>(fileName);
 
-        if (jsonTextAsset == null) return;
+        if (jsonTextAsset == null)
+        {
+            Debug.LogWarning($"[GridManager] Không tìm thấy file {fileName}.json trong Resources! Dùng random thay thế.");
+            SpawnRandomTestPlates(5);
+            return;
+        }
 
         LevelData levelData = JsonUtility.FromJson<LevelData>(jsonTextAsset.text);
+
+        // Truyền targetScore cho LevelManager và fire event cho UI
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.TargetScore = levelData.targetScore;
+            Debug.Log($"[GridManager] Màn {levelNumber} – Target Score: {levelData.targetScore}");
+
+            // Fire events để UIManager cập nhật HUD ngay lập tức
+            GameEventSystem.OnLevelChanged?.Invoke(levelNumber);
+            GameEventSystem.OnLevelTargetChanged?.Invoke(levelData.targetScore);
+        }
 
         foreach (JSONPlateData plateInfo in levelData.initialPlates)
         {
@@ -299,7 +319,7 @@ public class GridManager : MonoBehaviour
                 List<ToppingType> plateSlices = new List<ToppingType>();
                 foreach (string colorStr in plateInfo.toppings)
                 {
-                    if (Enum.TryParse(colorStr, true, out ToppingType toppingColor))
+                    if (System.Enum.TryParse(colorStr, true, out ToppingType toppingColor))
                     {
                         plateSlices.Add(toppingColor);
                     }
@@ -309,6 +329,30 @@ public class GridManager : MonoBehaviour
                 gridPlateMatrix[targetX, targetZ] = pizzaPlateScript;
             }
         }
+
+        Debug.Log($"<color=cyan>[GridManager] Đã load màn {levelNumber} thành công!</color>");
+    }
+
+    /// <summary>
+    /// Chỉ đọc targetScore từ JSON của màn đã load (không spawn đĩa lại).
+    /// Dùng khi resume game từ save data. Fire events để cập nhật UI.
+    /// </summary>
+    private void SyncTargetScoreFromJSON(int levelNumber)
+    {
+        string fileName = $"Level_{levelNumber:D2}";
+        TextAsset jsonTextAsset = Resources.Load<TextAsset>(fileName);
+        if (jsonTextAsset == null) return;
+
+        LevelData levelData = JsonUtility.FromJson<LevelData>(jsonTextAsset.text);
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.TargetScore = levelData.targetScore;
+            Debug.Log($"[GridManager] Sync targetScore = {levelData.targetScore} cho màn {levelNumber}.");
+        }
+
+        // Fire events để UIManager cập nhật Level và Target (dùng khi resume)
+        GameEventSystem.OnLevelChanged?.Invoke(levelNumber);
+        GameEventSystem.OnLevelTargetChanged?.Invoke(levelData.targetScore);
     }
 
     public bool CanPlacePlate(int x, int z)
@@ -533,18 +577,6 @@ public class GridManager : MonoBehaviour
         PizzaPlate p1 = GetPlateAt(x1, z1);
         PizzaPlate p2 = GetPlateAt(x2, z2);
 
-        // Bẻ gãy mối quan hệ đĩa đôi trước khi hoán đổi
-        if (p1 != null)
-        {
-            DoublePlate dp1 = p1.GetComponentInParent<DoublePlate>();
-            if (dp1 != null) dp1.BreakDoublePlate();
-        }
-        if (p2 != null)
-        {
-            DoublePlate dp2 = p2.GetComponentInParent<DoublePlate>();
-            if (dp2 != null) dp2.BreakDoublePlate();
-        }
-
         // Swap trong matrix
         gridPlateMatrix[x1, z1] = p2;
         gridPlateMatrix[x2, z2] = p1;
@@ -733,14 +765,6 @@ public class GridManager : MonoBehaviour
         PizzaPlate plate = GetPlateAt(x, z);
         if (plate == null) return;
 
-        // Nếu đĩa thuộc đĩa đôi, chuyển sang kiểm tra combo đĩa đôi đặc biệt
-        DoublePlate doublePlate = plate.GetComponentInParent<DoublePlate>();
-        if (doublePlate != null)
-        {
-            CheckAndExecuteDoublePlateCombo(doublePlate);
-            return;
-        }
-
         if (plate.GetSlices().Count < 6) return;
 
         List<ToppingType> slices = plate.GetSlices();
@@ -767,118 +791,6 @@ public class GridManager : MonoBehaviour
             ShowFloatingScore("+100", spawnPos);
             StartCoroutine(VisualShrinkAndPoolCoroutine(comboPlateObj, 0.22f));
         }
-    }
-
-    private void CheckAndExecuteDoublePlateCombo(DoublePlate doublePlate)
-    {
-        if (doublePlate == null) return;
-
-        PizzaPlate p1 = doublePlate.plate1;
-        PizzaPlate p2 = doublePlate.plate2;
-
-        if (p1 == null || p2 == null) return;
-
-        List<ToppingType> slices1 = p1.GetSlices();
-        List<ToppingType> slices2 = p2.GetSlices();
-
-        // Cả 2 đĩa phải đủ 6 lát bánh (tổng cộng 12 lát)
-        if (slices1.Count < 6 || slices2.Count < 6) return;
-
-        ToppingType targetTopping = slices1[0];
-        if (targetTopping == ToppingType.None) return;
-
-        // Kiểm tra xem tất cả 12 lát bánh có trùng topping này không
-        bool allMatch = true;
-        foreach (var topping in slices1)
-        {
-            if (topping != targetTopping)
-            {
-                allMatch = false;
-                break;
-            }
-        }
-        if (allMatch)
-        {
-            foreach (var topping in slices2)
-            {
-                if (topping != targetTopping)
-                {
-                    allMatch = false;
-                    break;
-                }
-            }
-        }
-
-        if (allMatch)
-        {
-            Debug.Log($"<color=cyan>[Đĩa Đôi Hoàn Thành] Đạt mốc hoàn hảo 12 lát vị {targetTopping}!</color>");
-
-            // Cộng 300 điểm và 15 vàng
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.AddScore(300, 15);
-            }
-
-            int x1 = p1.CurrentX;
-            int z1 = p1.CurrentZ;
-            int x2 = p2.CurrentX;
-            int z2 = p2.CurrentZ;
-
-            // Xóa khỏi lưới
-            if (x1 >= 0 && x1 < columns && z1 >= 0 && z1 < rows) gridPlateMatrix[x1, z1] = null;
-            if (x2 >= 0 && x2 < columns && z2 >= 0 && z2 < rows) gridPlateMatrix[x2, z2] = null;
-
-            // Hiển thị Floating Text +300 tại điểm chính giữa 2 đĩa
-            Vector3 centerPos = (p1.transform.position + p2.transform.position) * 0.5f + new Vector3(0f, 2f, -1f);
-            ShowFloatingScore("+300", centerPos);
-
-            // Gán lại cha để co nhỏ đồng bộ và trả về pool
-            p1.transform.SetParent(doublePlate.transform);
-            p2.transform.SetParent(doublePlate.transform);
-
-            StartCoroutine(VisualShrinkAndPoolDoublePlateCoroutine(doublePlate, p1, p2, 0.22f));
-        }
-    }
-
-    private IEnumerator VisualShrinkAndPoolDoublePlateCoroutine(DoublePlate doublePlate, PizzaPlate p1, PizzaPlate p2, float delay = 0f)
-    {
-        if (doublePlate == null) yield break;
-        if (delay > 0f)
-        {
-            yield return new WaitForSeconds(delay);
-        }
-
-        Transform target = doublePlate.transform;
-        Vector3 startScale = target.localScale;
-        float duration = 0.2f;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            if (target == null) yield break;
-            elapsed += Time.deltaTime;
-            float progress = elapsed / duration;
-
-            target.localScale = Vector3.Lerp(startScale, Vector3.zero, Mathf.SmoothStep(0f, 1f, progress));
-            yield return null;
-        }
-
-        if (p1 != null)
-        {
-            p1.transform.SetParent(null);
-            p1.transform.localScale = Vector3.one;
-            p1.SetPlateMeshActive(true); // Trả lại mesh để tái sử dụng
-            ReturnPlateToPool(p1.gameObject);
-        }
-        if (p2 != null)
-        {
-            p2.transform.SetParent(null);
-            p2.transform.localScale = Vector3.one;
-            p2.SetPlateMeshActive(true);
-            ReturnPlateToPool(p2.gameObject);
-        }
-
-        Destroy(doublePlate.gameObject);
     }
 
     private void CheckGameOver()
@@ -1057,22 +969,10 @@ public class GridManager : MonoBehaviour
             {
                 if (gridPlateMatrix[x, z] != null)
                 {
-                    // 3. Sửa kiểu tạo Object thành PizzaPlateSaveData
                     PizzaPlateSaveData data = new PizzaPlateSaveData();
                     data.X = x;
                     data.Z = z;
                     data.Slices = gridPlateMatrix[x, z].GetSlicesOnPlate();
-
-                    // Lưu thông tin đĩa đôi nếu đĩa con này thuộc đĩa đôi cha
-                    DoublePlate dp = gridPlateMatrix[x, z].GetComponentInParent<DoublePlate>();
-                    if (dp != null)
-                    {
-                        data.hasParentDoublePlate = true;
-                        data.parentDoublePlateX = dp.plate1 != null ? dp.plate1.CurrentX : -1;
-                        data.parentDoublePlateZ = dp.plate1 != null ? dp.plate1.CurrentZ : -1;
-                        data.parentDoublePlateYRot = dp.transform.eulerAngles.y;
-                        data.isVertical = dp.isVertical;
-                    }
 
                     currentState.Add(data);
                 }
@@ -1104,73 +1004,6 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // 2. Tìm và ghép nhóm các đĩa đôi
-        DockManager dockManager = FindAnyObjectByType<DockManager>();
-        GameObject doublePrefab = (dockManager != null) ? dockManager.DoublePlatePrefab : null;
-
-        // Lưu vết các đĩa đôi đã được tạo dựa trên tọa độ đĩa con thứ nhất (parentDoublePlateX, parentDoublePlateZ)
-        HashSet<string> createdDoublePlates = new HashSet<string>();
-
-        foreach (PizzaPlateSaveData plateData in SaveManager.Instance.PlayerData.Plates)
-        {
-            if (plateData.hasParentDoublePlate)
-            {
-                string key = $"{plateData.parentDoublePlateX},{plateData.parentDoublePlateZ}";
-                if (createdDoublePlates.Contains(key)) continue;
-
-                // Tìm đĩa con 1 và 2 trên lưới
-                PizzaPlate p1 = GetPlateAt(plateData.parentDoublePlateX, plateData.parentDoublePlateZ);
-                PizzaPlate p2 = null;
-
-                // Duyệt tìm đĩa con thứ 2 có cùng thuộc tính parentDoublePlateX/Z
-                foreach (PizzaPlateSaveData otherData in SaveManager.Instance.PlayerData.Plates)
-                {
-                    if (otherData.hasParentDoublePlate &&
-                        otherData.parentDoublePlateX == plateData.parentDoublePlateX &&
-                        otherData.parentDoublePlateZ == plateData.parentDoublePlateZ &&
-                        (otherData.X != plateData.parentDoublePlateX || otherData.Z != plateData.parentDoublePlateZ))
-                    {
-                        p2 = GetPlateAt(otherData.X, otherData.Z);
-                        break;
-                    }
-                }
-
-                if (p1 != null && p2 != null)
-                {
-                    createdDoublePlates.Add(key);
-
-                    // Tạo đối tượng DoublePlate cha
-                    GameObject doublePlateObj;
-                    if (doublePrefab != null)
-                    {
-                        doublePlateObj = Instantiate(doublePrefab, p1.transform.position, Quaternion.identity);
-                    }
-                    else
-                    {
-                        doublePlateObj = new GameObject("DoublePlate_Parent");
-                        doublePlateObj.transform.position = p1.transform.position;
-                    }
-                    doublePlateObj.name = $"Grid_DoublePlate_[{p1.CurrentX},{p1.CurrentZ}]";
-
-                    DoublePlate doublePlateScript = doublePlateObj.GetComponent<DoublePlate>();
-                    if (doublePlateScript == null)
-                    {
-                        doublePlateScript = doublePlateObj.AddComponent<DoublePlate>();
-                    }
-
-                    float stepDist = cellSize + spacing;
-
-                    // Thiết lập quan hệ cha con và vị trí
-                    // Nếu sử dụng Prefab thì luôn Setup dạng Vertical (true) để khớp với trục Z của mô hình 3D
-                    bool useVerticalSetup = (doublePrefab != null);
-                    doublePlateScript.SetupDoublePlate(p1, p2, useVerticalSetup ? true : plateData.isVertical, stepDist);
-
-                    // Khôi phục góc xoay Y chính xác đã lưu
-                    doublePlateObj.transform.eulerAngles = new Vector3(0f, plateData.parentDoublePlateYRot, 0f);
-                }
-            }
-        }
-
-        Debug.Log("<color=green>[GridManager] Đã tải và tái tạo thành công toàn bộ đĩa bánh cũ (kèm đĩa đôi)!</color>");
+        Debug.Log("<color=green>[GridManager] Đã tải và tái tạo thành công toàn bộ đĩa bánh cũ!</color>");
     }
 }

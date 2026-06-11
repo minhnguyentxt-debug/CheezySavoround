@@ -10,6 +10,7 @@ public class GameData
     public string lastClaimedTime = "";
     public int currentStreak = 0;
     public List<PizzaPlateSaveData> Plates = new List<PizzaPlateSaveData>();
+    public int currentLevel = 1; // Màn chơi hiện tại (1–30)
 }
 
 [System.Serializable]

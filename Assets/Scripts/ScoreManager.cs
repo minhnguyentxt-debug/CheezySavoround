@@ -52,6 +52,9 @@ public class ScoreManager : MonoBehaviour
         GameEventSystem.OnPizzaCompleted -= AddRewards;
     }
 
+    // Biến cờ để tránh kích hoạt OnLevelComplete nhiều lần trong cùng một màn
+    private bool levelCompleted = false;
+
     private void AddRewards(ToppingType topping)
     {
         AddScore(100, 5);
@@ -82,6 +85,18 @@ public class ScoreManager : MonoBehaviour
 
         // Cập nhật toàn bộ UI HUD thời gian thực
         TriggerAllUIEvents();
+
+        // --- CHECK ĐIỀU KIỆN THẮNG MÀN ---
+        if (!levelCompleted && LevelManager.Instance != null)
+        {
+            int target = LevelManager.Instance.TargetScore;
+            if (target > 0 && currentScore >= target)
+            {
+                levelCompleted = true;
+                Debug.Log($"[ScoreManager] Đạt {currentScore}/{target} điểm – kích hoạt thắng màn!");
+                GameEventSystem.OnLevelComplete?.Invoke();
+            }
+        }
     }
 
     // Hàm cộng coin công khai
@@ -111,6 +126,7 @@ public class ScoreManager : MonoBehaviour
         currentScore = 0;
         currentGold = 0; // Reset cả vàng về 0 nếu vàng tính theo từng lượt chơi
         lastCoinMilestone = 0;
+        levelCompleted = false; // Cho phép thắng màn lại ở màn mới
 
         // Ép các Text UI cập nhật ngay lập tức về mốc số 0 đầu game
         TriggerAllUIEvents();

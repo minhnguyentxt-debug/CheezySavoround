@@ -7,6 +7,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject hudPanel;
     [SerializeField] private TextMeshProUGUI hudScoreText;
     [SerializeField] private TextMeshProUGUI hudHighScoreText;
+    [SerializeField] private TextMeshProUGUI hudLevelText;       // Hiển thị số màn: "Level 3"
+    [SerializeField] private TextMeshProUGUI hudTargetScoreText; // Hiển thị mục tiêu: "Target: 400"
 
     [Header("GameOver UI")]
     [SerializeField] private GameObject gameOverPanel;
@@ -30,6 +32,13 @@ public class UIManager : MonoBehaviour
             if (hudScoreText != null) hudScoreText.text = "Score: 0";
             if (hudHighScoreText != null) hudHighScoreText.text = "Best: 0";
         }
+
+        // Hiển thị level và mục tiêu ban đầu
+        if (LevelManager.Instance != null)
+        {
+            UpdateLevelUI(LevelManager.Instance.CurrentLevel);
+            UpdateTargetScoreUI(LevelManager.Instance.TargetScore);
+        }
     }
 
     private void OnEnable()
@@ -37,6 +46,8 @@ public class UIManager : MonoBehaviour
         // Đăng ký nhận sự kiện khi điểm thay đổi
         GameEventSystem.OnScoreChanged += UpdateScoreUI;
         GameEventSystem.OnHighScoreChanged += UpdateHighScoreUI;
+        GameEventSystem.OnLevelChanged += UpdateLevelUI;
+        GameEventSystem.OnLevelTargetChanged += UpdateTargetScoreUI;
     }
 
     private void OnDisable()
@@ -44,6 +55,8 @@ public class UIManager : MonoBehaviour
         // Hủy đăng ký để tránh lỗi rò rỉ bộ nhớ (Memory Leak)
         GameEventSystem.OnScoreChanged -= UpdateScoreUI;
         GameEventSystem.OnHighScoreChanged -= UpdateHighScoreUI;
+        GameEventSystem.OnLevelChanged -= UpdateLevelUI;
+        GameEventSystem.OnLevelTargetChanged -= UpdateTargetScoreUI;
     }
 
     private void UpdateScoreUI(int score)
@@ -58,6 +71,18 @@ public class UIManager : MonoBehaviour
         // Cập nhật điểm cao nhất đồng thời cho cả HUD và Bảng Game Over
         if (hudHighScoreText != null) hudHighScoreText.text = $"Best: {highScore}";
         if (finalHighScoreText != null) finalHighScoreText.text = $"BEST: {highScore}";
+    }
+
+    private void UpdateLevelUI(int level)
+    {
+        if (hudLevelText != null)
+            hudLevelText.text = $"Level {level} / {LevelManager.TotalLevels}";
+    }
+
+    private void UpdateTargetScoreUI(int targetScore)
+    {
+        if (hudTargetScoreText != null)
+            hudTargetScoreText.text = $"Target: {targetScore}";
     }
 
     public void ShowGameOver()

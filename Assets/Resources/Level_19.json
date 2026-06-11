@@ -1,0 +1,16 @@
+{
+  "levelNumber": 19,
+  "targetScore": 3400,
+  "initialPlates": [
+    { "x": 0, "z": 0, "toppings": ["Red", "Blue", "Green", "Orange"] },
+    { "x": 1, "z": 0, "toppings": ["Orange", "Orange", "Purple", "Yellow"] },
+    { "x": 2, "z": 1, "toppings": ["Yellow", "Yellow", "Red", "Blue"] },
+    { "x": 3, "z": 0, "toppings": ["Blue", "Blue", "Green"] },
+    { "x": 0, "z": 2, "toppings": ["Green", "Green", "Orange", "Purple"] },
+    { "x": 1, "z": 3, "toppings": ["Purple", "Purple", "Red"] },
+    { "x": 2, "z": 2, "toppings": ["Red", "Orange", "Yellow", "Blue"] },
+    { "x": 3, "z": 3, "toppings": ["Green", "Green", "Purple"] },
+    { "x": 0, "z": 4, "toppings": ["Blue", "Yellow", "Orange"] },
+    { "x": 2, "z": 5, "toppings": ["Yellow", "Yellow"] }
+  ]
+}

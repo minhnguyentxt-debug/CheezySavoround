@@ -14,5 +14,7 @@ public class LevelData
 {
     public int levelNumber;
     public int targetScore;
+    public int gridColumns = 0; // 0 = dùng giá trị mặc định của GridManager
+    public int gridRows = 0;    // 0 = dùng giá trị mặc định của GridManager
     public List<JSONPlateData> initialPlates;
 }
