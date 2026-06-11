@@ -50,11 +50,9 @@ public class SceneController : MonoBehaviour
     {
         if (SaveManager.Instance != null)
         {
-            // Xóa sạch dữ liệu lưới cũ để chơi lại từ đầu
             SaveManager.Instance.PlayerData.Plates.Clear();
 
-            // LƯU Ý: Nếu muốn reset cả Vàng hoặc Điểm khi chơi mới, bạn có thể bỏ dòng comment dưới:
-            // SaveManager.Instance.PlayerData.gold = 0;
+            ScoreManager.Instance.ResetScoreForNewGame();
 
             SaveManager.Instance.SaveGame(); // Lưu lại file trống trước khi vào game
         }

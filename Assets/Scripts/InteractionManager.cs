@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InteractionManager : MonoBehaviour
 {
@@ -12,11 +13,13 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private LayerMask interactableLayer;
 
     private PizzaPlate selectedPlate = null;
+    private DoublePlate selectedDoublePlate = null;
     private Vector3 originalPosition;
     private int sourceDockSlotIndex = -1;
 
     // BÍ QUYẾT: Tạo một biến tạm để ghi nhớ chính xác Collider của đĩa đang cầm
     private Collider cachedPlateCollider = null;
+    private List<Collider> cachedDoublePlateColliders = new List<Collider>();
 
     void Start()
     {
@@ -35,12 +38,12 @@ public class InteractionManager : MonoBehaviour
             TryPickUpPlate();
         }
 
-        if (Input.GetMouseButton(0) && selectedPlate != null)
+        if (Input.GetMouseButton(0) && (selectedPlate != null || selectedDoublePlate != null))
         {
             DragPlate();
         }
 
-        if (Input.GetMouseButtonUp(0) && selectedPlate != null)
+        if (Input.GetMouseButtonUp(0) && (selectedPlate != null || selectedDoublePlate != null))
         {
             DropPlate();
         }
@@ -53,18 +56,42 @@ public class InteractionManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 100f))
         {
+            // 1. Kiểm tra xem có trúng DoublePlate trước (bao gồm cả phần ở giữa)
+            DoublePlate doublePlate = hit.collider.GetComponentInParent<DoublePlate>();
+            if (doublePlate != null)
+            {
+                // Kiểm tra xem đĩa đôi này có đang nằm ở Dock không (tọa độ của đĩa 1 là -1)
+                if (doublePlate.plate1 != null && doublePlate.plate1.CurrentX == -1 && doublePlate.plate1.CurrentZ == -1)
+                {
+                    sourceDockSlotIndex = dockManager.FindDockSlotForPlate(doublePlate.plate1);
+
+                    if (sourceDockSlotIndex != -1)
+                    {
+                        selectedDoublePlate = doublePlate;
+                        originalPosition = selectedDoublePlate.transform.position;
+                        selectedDoublePlate.transform.position += Vector3.up * liftHeight;
+
+                        // Tắt colliders của toàn bộ các con (bao gồm 2 đĩa đơn và collider đĩa đôi cha) để không cản trở kéo thả
+                        cachedDoublePlateColliders.Clear();
+                        foreach (Collider col in selectedDoublePlate.GetComponentsInChildren<Collider>())
+                        {
+                            if (col.enabled)
+                            {
+                                col.enabled = false;
+                                cachedDoublePlateColliders.Add(col);
+                            }
+                        }
+                        return; // Đã nhấc đĩa đôi thành công, thoát hàm sớm
+                    }
+                }
+            }
+
+            // 2. Nếu không trúng đĩa đôi, kiểm tra xem có trúng PizzaPlate đơn lẻ bình thường không
             PizzaPlate plate = hit.collider.GetComponentInParent<PizzaPlate>();
 
             if (plate != null && plate.CurrentX == -1 && plate.CurrentZ == -1)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    if (dockManager.GetPlateAtSlot(i) == plate)
-                    {
-                        sourceDockSlotIndex = i;
-                        break;
-                    }
-                }
+                sourceDockSlotIndex = dockManager.FindDockSlotForPlate(plate);
 
                 if (sourceDockSlotIndex != -1)
                 {
@@ -72,11 +99,11 @@ public class InteractionManager : MonoBehaviour
                     originalPosition = selectedPlate.transform.position;
                     selectedPlate.transform.position += Vector3.up * liftHeight;
 
-                    // KHẮC PHỤC 1: Tìm và ép biến ghi nhớ Collider ngay từ lúc này
+                    // Tắt collider để tránh cản trở raycast
                     cachedPlateCollider = selectedPlate.GetComponentInChildren<Collider>();
                     if (cachedPlateCollider != null)
                     {
-                        cachedPlateCollider.enabled = false; // Tắt đi để tránh cản tia Raycast
+                        cachedPlateCollider.enabled = false;
                     }
                 }
             }
@@ -92,7 +119,14 @@ public class InteractionManager : MonoBehaviour
         if (dragPlane.Raycast(ray, out enter))
         {
             Vector3 hitPoint = ray.GetPoint(enter);
-            selectedPlate.transform.position = hitPoint;
+            if (selectedDoublePlate != null)
+            {
+                selectedDoublePlate.transform.position = hitPoint;
+            }
+            else if (selectedPlate != null)
+            {
+                selectedPlate.transform.position = hitPoint;
+            }
         }
     }
 
@@ -128,23 +162,65 @@ public class InteractionManager : MonoBehaviour
                     int targetX = int.Parse(slotName.Substring(openBracket + 1, comma - openBracket - 1));
                     int targetZ = int.Parse(slotName.Substring(comma + 1, closeBracket - comma - 1));
 
-                    if (gridManager.CanPlacePlate(targetX, targetZ))
+                    if (selectedDoublePlate != null)
                     {
-                        gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
+                        // Xác định ô thứ hai của đĩa đôi dựa trên vị trí thực tế của plate2 (giữ nguyên góc quay kéo thả)
+                        gridManager.GetCellCoordinates(selectedDoublePlate.plate2.transform.position, out int secondX, out int secondZ);
 
-                        // Kích hoạt kiểm tra gộp bánh (Có khả năng đĩa sẽ bị Destroy tại đây)
-                        gridManager.CheckAndMergePizza(targetX, targetZ);
+                        bool isAdjacent = Mathf.Abs(secondX - targetX) + Mathf.Abs(secondZ - targetZ) == 1;
+                        bool slotsAreEmpty = gridManager.CanPlacePlate(targetX, targetZ);
+                        bool secondSlotInBounds = secondX >= 0 && secondX < gridManager.Columns && secondZ >= 0 && secondZ < gridManager.Rows;
+                        bool secondSlotIsEmpty = secondSlotInBounds && gridManager.CanPlacePlate(secondX, secondZ);
 
-                        dockManager.EmptyDockSlot(sourceDockSlotIndex);
-                        placementSuccessful = true;
-
-                        // KHẮC PHỤC 2: Kiểm tra xem đĩa bánh có còn sống sót sau Combo không thì mới bật lại Collider
-                        if (selectedPlate != null && cachedPlateCollider != null)
+                        if (isAdjacent && slotsAreEmpty && secondSlotIsEmpty)
                         {
-                            cachedPlateCollider.enabled = true;
-                        }
+                            PizzaPlate p1 = selectedDoublePlate.plate1;
+                            PizzaPlate p2 = selectedDoublePlate.plate2;
 
-                        dockManager.SpawnNewPlatesToAllSlots();
+                            // Bật lại các colliders cho cả hai đĩa con
+                            foreach (Collider col in cachedDoublePlateColliders)
+                            {
+                                if (col != null) col.enabled = true;
+                            }
+
+                            // Giữ nguyên góc xoay hiện tại của đĩa đôi cha, snap vị trí cha về điểm chính giữa 2 ô slot thế giới
+                            Vector3 p1WorldPos = gridManager.GetSlotWorldPosition(targetX, targetZ);
+                            Vector3 p2WorldPos = gridManager.GetSlotWorldPosition(secondX, secondZ);
+                            selectedDoublePlate.transform.position = (p1WorldPos + p2WorldPos) * 0.5f;
+
+                            // Đăng ký cả hai đĩa vào lưới
+                            gridManager.AddPlateToGrid(p1, targetX, targetZ);
+                            gridManager.AddPlateToGrid(p2, secondX, secondZ);
+
+                            // Kích hoạt tính năng gộp bánh tự động
+                            gridManager.CheckAndMergePizza(targetX, targetZ);
+                            gridManager.CheckAndMergePizza(secondX, secondZ);
+
+                            dockManager.EmptyDockSlot(sourceDockSlotIndex);
+                            placementSuccessful = true;
+
+                            selectedDoublePlate = null;
+
+                            dockManager.SpawnNewPlatesToAllSlots();
+                        }
+                    }
+                    else if (selectedPlate != null)
+                    {
+                        if (gridManager.CanPlacePlate(targetX, targetZ))
+                        {
+                            gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
+                            gridManager.CheckAndMergePizza(targetX, targetZ);
+
+                            dockManager.EmptyDockSlot(sourceDockSlotIndex);
+                            placementSuccessful = true;
+
+                            if (selectedPlate != null && cachedPlateCollider != null)
+                            {
+                                cachedPlateCollider.enabled = true;
+                            }
+
+                            dockManager.SpawnNewPlatesToAllSlots();
+                        }
                     }
                 }
             }
@@ -153,37 +229,48 @@ public class InteractionManager : MonoBehaviour
         // Trường hợp thả trượt ra ngoài ô lưới
         if (!placementSuccessful)
         {
-            // Bật lại Collider dựa trên biến nhớ tạm (chắc chắn thành công vì đĩa chưa bị hủy)
-            if (cachedPlateCollider != null)
+            if (selectedDoublePlate != null)
             {
-                cachedPlateCollider.enabled = true;
+                foreach (Collider col in cachedDoublePlateColliders)
+                {
+                    if (col != null) col.enabled = true;
+                }
+                StartCoroutine(ReturnToSenderCoroutine(selectedDoublePlate.transform, originalPosition));
             }
-
-            StartCoroutine(ReturnToSenderCoroutine(selectedPlate, originalPosition));
+            else if (selectedPlate != null)
+            {
+                if (cachedPlateCollider != null)
+                {
+                    cachedPlateCollider.enabled = true;
+                }
+                StartCoroutine(ReturnToSenderCoroutine(selectedPlate.transform, originalPosition));
+            }
         }
 
-        // KHẮC PHỤC NGOẠI LỆ: Ép giải phóng bộ nhớ sạch sẽ dù bất kỳ kịch bản nào xảy ra
+        // Giải phóng biến tạm sạch sẽ
         selectedPlate = null;
+        selectedDoublePlate = null;
         cachedPlateCollider = null;
+        cachedDoublePlateColliders.Clear();
         sourceDockSlotIndex = -1;
     }
 
-    private System.Collections.IEnumerator ReturnToSenderCoroutine(PizzaPlate plate, Vector3 targetPos)
+    private System.Collections.IEnumerator ReturnToSenderCoroutine(Transform targetTransform, Vector3 targetPos)
     {
-        if (plate == null) yield break;
+        if (targetTransform == null) yield break;
 
         float elapsed = 0f;
         float duration = 0.15f;
-        Vector3 startPos = plate.transform.position;
+        Vector3 startPos = targetTransform.position;
 
         while (elapsed < duration)
         {
-            if (plate == null) yield break; // Phòng thủ nếu đĩa bị hủy đột ngột lúc đang bay
+            if (targetTransform == null) yield break;
             elapsed += Time.deltaTime;
-            plate.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            targetTransform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
             yield return null;
         }
 
-        if (plate != null) plate.transform.position = targetPos;
+        if (targetTransform != null) targetTransform.position = targetPos;
     }
 }

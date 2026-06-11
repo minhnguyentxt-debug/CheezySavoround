@@ -9,4 +9,6 @@ public static class GameEventSystem
     public static Action<int> OnGoldChanged;
     public static Action<int> OnHighScoreChanged;
     public static Action<string> OnSkinSelected;
+    public static System.Action<int> OnCoinsChanged;
+    public static System.Action<string, int> OnItemAdded;
 }

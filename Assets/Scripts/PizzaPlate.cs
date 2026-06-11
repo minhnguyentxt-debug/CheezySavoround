@@ -160,6 +160,20 @@ public class PizzaPlate : MonoBehaviour
     {
         GameEventSystem.OnSkinSelected -= ApplyNewSkinMaterial;
     }
+
+    /// <summary>
+    /// Bật/Tắt hiển thị của mesh đĩa đơn (ví dụ khi nằm trong đĩa đôi)
+    /// </summary>
+    public void SetPlateMeshActive(bool active)
+    {
+        foreach (Transform child in transform)
+        {
+            if (child != null && !child.name.StartsWith("Slice_"))
+            {
+                child.gameObject.SetActive(active);
+            }
+        }
+    }
     /// <summary>
     /// Thêm một lát bánh mới vào danh sách và cập nhật lại hình ảnh trên đĩa.
     /// </summary>

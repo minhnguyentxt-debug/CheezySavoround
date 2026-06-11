@@ -8,6 +8,10 @@ public class PizzaPlateSaveData
 {
     public int X, Z;
     public List<ToppingType> Slices;
+    public bool hasParentDoublePlate;
+    public int parentDoublePlateX, parentDoublePlateZ;
+    public float parentDoublePlateYRot;
+    public bool isVertical;
 }
 
 public class SaveManager : MonoBehaviour
@@ -50,7 +54,7 @@ public class SaveManager : MonoBehaviour
         File.WriteAllText(savePath, encryptedJson);
         Debug.Log("[SaveManager] Đã lưu dữ liệu bảo mật thành công!");
     }
-
+    
     public void LoadGame()
     {
         if (File.Exists(savePath))
