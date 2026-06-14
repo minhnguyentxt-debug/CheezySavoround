@@ -9,4 +9,13 @@ public static class GameEventSystem
     public static Action<int> OnGoldChanged;
     public static Action<int> OnHighScoreChanged;
     public static Action<string> OnSkinSelected;
+    public static System.Action<int> OnCoinsChanged;
+    public static System.Action<string, int> OnItemAdded;
+    public static System.Action OnLevelComplete; // Kích hoạt khi đạt đủ targetScore của màn
+    public static System.Action<int> OnLevelChanged; // Kích hoạt khi chuyển sang màn mới (truyền số màn)
+    public static System.Action<int> OnLevelTargetChanged; // Kích hoạt khi load màn mới (truyền targetScore)
+    
+    // Daily Reward Events
+    public static System.Action<bool> OnDailyRewardAvailable; // Kích hoạt khi có/không có thưởng nhận (true/false)
+    public static System.Action<int> OnDailyRewardClaimed; // Kích hoạt khi nhận thưởng (truyền số coin nhận được)
 }

@@ -13,6 +13,11 @@ public class GridManager : MonoBehaviour
     [SerializeField] private float cellSize = 3.5f;
     [SerializeField] private float spacing = 0f;
 
+    public int Columns => columns;
+    public int Rows => rows;
+    public float CellSize => cellSize;
+    public float Spacing => spacing;
+
     [Header("Visual Checkerboard Colors")]
     [SerializeField] private Color lightSlotColor = new Color(0.85f, 0.85f, 0.85f);
     [SerializeField] private Color darkSlotColor = new Color(0.65f, 0.65f, 0.65f);
@@ -56,10 +61,27 @@ public class GridManager : MonoBehaviour
     {
         InitializePlatePool();
         GenerateGrid();
-        // LoadLevelFromJSON(1);
-        SpawnRandomTestPlates(5);
-    }
 
+        // KIỂM TRA VÀ TÁI TẠO LƯỚI TỪ FILE SAVE (đang chơi dở)
+        if (SaveManager.Instance != null && SaveManager.Instance.PlayerData.Plates.Count > 0)
+        {
+            // Có save data (đang chơi dở màn) → load lại lưới cũ
+            LoadSavedPlates();
+
+            // Đồng bộ targetScore và fire event UI
+            int lv = LevelCompleteUI.GetCurrentLevel(); // Dùng PlayerPrefs làm nguồn chính
+            SyncTargetScoreFromJSON(lv);
+        }
+        else
+        {
+            // Không có save → load màn từ PlayerPrefs (nguồn đáng tin cậy nhất)
+            int levelToLoad = LevelCompleteUI.GetCurrentLevel();
+            levelToLoad = Mathf.Clamp(levelToLoad, 1, LevelManager.TotalLevels);
+
+            Debug.Log($"<color=yellow>[GridManager] Đang load màn {levelToLoad} từ PlayerPrefs</color>");
+            LoadLevelFromJSON(levelToLoad);
+        }
+    }
     private void InitializePlatePool()
     {
         for (int i = 0; i < initialPoolSize; i++)
@@ -99,8 +121,6 @@ public class GridManager : MonoBehaviour
         PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
         if (pizzaPlateScript != null)
         {
-            // Sử dụng ClearAllSlices nếu bạn đã định nghĩa nó trong PizzaPlate, 
-            // hoặc dùng Clear() danh sách logic tùy thuộc cấu trúc của bạn.
             pizzaPlateScript.GetSlices().Clear();
         }
 
@@ -218,14 +238,69 @@ public class GridManager : MonoBehaviour
         Debug.Log("<color=green>[GridManager] Đã khởi tạo lưới so le màu bàn cờ khít nhau!</color>");
     }
 
-    private void LoadLevelFromJSON(int levelNumber)
+    public Vector3 GetSlotWorldPosition(int x, int z)
+    {
+        if (gridMatrix != null && x >= 0 && x < columns && z >= 0 && z < rows && gridMatrix[x, z] != null)
+        {
+            return gridMatrix[x, z].transform.position;
+        }
+        return Vector3.zero;
+    }
+
+    public bool GetCellCoordinates(Vector3 worldPosition, out int x, out int z)
+    {
+        x = -1;
+        z = -1;
+        float minDistance = 2.0f; // Khoảng cách snap tối đa
+
+        for (int i = 0; i < columns; i++)
+        {
+            for (int j = 0; j < rows; j++)
+            {
+                if (gridMatrix[i, j] != null)
+                {
+                    float dist = Vector3.Distance(worldPosition, gridMatrix[i, j].transform.position);
+                    if (dist < minDistance)
+                    {
+                        minDistance = dist;
+                        x = i;
+                        z = j;
+                    }
+                }
+            }
+        }
+
+        return x != -1 && z != -1;
+    }
+
+    /// <summary>
+    /// Load màn chơi từ file JSON trong Resources/. 
+    /// Đổi thành public để LevelManager có thể gọi khi cần.
+    /// </summary>
+    public void LoadLevelFromJSON(int levelNumber)
     {
         string fileName = $"Level_{levelNumber:D2}";
         TextAsset jsonTextAsset = Resources.Load<TextAsset>(fileName);
 
-        if (jsonTextAsset == null) return;
+        if (jsonTextAsset == null)
+        {
+            Debug.LogWarning($"[GridManager] Không tìm thấy file {fileName}.json trong Resources! Dùng random thay thế.");
+            SpawnRandomTestPlates(5);
+            return;
+        }
 
         LevelData levelData = JsonUtility.FromJson<LevelData>(jsonTextAsset.text);
+
+        // Truyền targetScore cho LevelManager và fire event cho UI
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.TargetScore = levelData.targetScore;
+            Debug.Log($"[GridManager] Màn {levelNumber} – Target Score: {levelData.targetScore}");
+
+            // Fire events để UIManager cập nhật HUD ngay lập tức
+            GameEventSystem.OnLevelChanged?.Invoke(levelNumber);
+            GameEventSystem.OnLevelTargetChanged?.Invoke(levelData.targetScore);
+        }
 
         foreach (JSONPlateData plateInfo in levelData.initialPlates)
         {
@@ -244,7 +319,7 @@ public class GridManager : MonoBehaviour
                 List<ToppingType> plateSlices = new List<ToppingType>();
                 foreach (string colorStr in plateInfo.toppings)
                 {
-                    if (Enum.TryParse(colorStr, true, out ToppingType toppingColor))
+                    if (System.Enum.TryParse(colorStr, true, out ToppingType toppingColor))
                     {
                         plateSlices.Add(toppingColor);
                     }
@@ -254,6 +329,30 @@ public class GridManager : MonoBehaviour
                 gridPlateMatrix[targetX, targetZ] = pizzaPlateScript;
             }
         }
+
+        Debug.Log($"<color=cyan>[GridManager] Đã load màn {levelNumber} thành công!</color>");
+    }
+
+    /// <summary>
+    /// Chỉ đọc targetScore từ JSON của màn đã load (không spawn đĩa lại).
+    /// Dùng khi resume game từ save data. Fire events để cập nhật UI.
+    /// </summary>
+    private void SyncTargetScoreFromJSON(int levelNumber)
+    {
+        string fileName = $"Level_{levelNumber:D2}";
+        TextAsset jsonTextAsset = Resources.Load<TextAsset>(fileName);
+        if (jsonTextAsset == null) return;
+
+        LevelData levelData = JsonUtility.FromJson<LevelData>(jsonTextAsset.text);
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.TargetScore = levelData.targetScore;
+            Debug.Log($"[GridManager] Sync targetScore = {levelData.targetScore} cho màn {levelNumber}.");
+        }
+
+        // Fire events để UIManager cập nhật Level và Target (dùng khi resume)
+        GameEventSystem.OnLevelChanged?.Invoke(levelNumber);
+        GameEventSystem.OnLevelTargetChanged?.Invoke(levelData.targetScore);
     }
 
     public bool CanPlacePlate(int x, int z)
@@ -373,6 +472,12 @@ public class GridManager : MonoBehaviour
                                         targetSlices.RemoveAt(i);
 
                                         StartCoroutine(AnimateSliceTransferCoroutine(targetPlate.transform.position, destPlate.transform.position, outcast, destPlate));
+                                        
+                                        // Phát âm thanh gộp bánh
+                                        if (AudioManager.Instance != null)
+                                        {
+                                            AudioManager.Instance.PlayMergeSound();
+                                        }
 
                                         destPlate.UpdateVisuals();
                                         CheckAndExecuteCombo(dest.x, dest.y);
@@ -422,6 +527,12 @@ public class GridManager : MonoBehaviour
                                     targetPlateChanged = true;
 
                                     StartCoroutine(AnimateSliceTransferCoroutine(neighborPlate.transform.position, targetPlate.transform.position, topping, targetPlate));
+                                    
+                                    // Phát âm thanh gộp bánh
+                                    if (AudioManager.Instance != null)
+                                    {
+                                        AudioManager.Instance.PlayMergeSound();
+                                    }
 
                                     if (!alreadyInQueue.Contains(neighborCell))
                                     {
@@ -493,6 +604,23 @@ public class GridManager : MonoBehaviour
             p2.CurrentX = x1; p2.CurrentZ = z1;
             p2.transform.position = gridMatrix[x1, z1].transform.position;
         }
+
+        // Kích hoạt tự động gộp bánh tại 2 vị trí mới sau khi hoán đổi
+        if (p1 != null)
+        {
+            CheckAndMergePizza(x2, z2);
+        }
+        if (p2 != null)
+        {
+            CheckAndMergePizza(x1, z1);
+        }
+
+        // Lưu lại trạng thái bàn chơi mới
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.Plates = GetCurrentGridState();
+            SaveManager.Instance.SaveGame();
+        }
     }
     public void AddSauceToPlate(int x, int z)
     {
@@ -541,6 +669,11 @@ public class GridManager : MonoBehaviour
             StartCoroutine(DelayedMergeCoroutine(x2, z2));
 
             Debug.Log("Đã tạo đĩa mới và kích hoạt gộp tại đích!");
+        }
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.Plates = GetCurrentGridState();
+            SaveManager.Instance.SaveGame();
         }
     }
     /// <summary>
@@ -642,7 +775,9 @@ public class GridManager : MonoBehaviour
     private void CheckAndExecuteCombo(int x, int z)
     {
         PizzaPlate plate = GetPlateAt(x, z);
-        if (plate == null || plate.GetSlices().Count < 6) return;
+        if (plate == null) return;
+
+        if (plate.GetSlices().Count < 6) return;
 
         List<ToppingType> slices = plate.GetSlices();
         ToppingType firstType = slices[0];
@@ -669,6 +804,7 @@ public class GridManager : MonoBehaviour
             StartCoroutine(VisualShrinkAndPoolCoroutine(comboPlateObj, 0.22f));
         }
     }
+
     private void CheckGameOver()
     {
         bool hasEmptySlot = false;
@@ -706,8 +842,40 @@ public class GridManager : MonoBehaviour
     // Hàm gắn vào Button Replay
     public void ReplayGame()
     {
+        StartCoroutine(ReplayGameCoroutine());
+    }
+    
+    private IEnumerator ReplayGameCoroutine()
+    {
         Time.timeScale = 1f; // Chạy lại thời gian
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Load lại scene hiện tại
+        
+        // QUAN TRỌNG: Lưu item usages trước khi reload
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.SaveItemUsages();
+            Debug.Log("[GridManager] Đã lưu item usages trước khi replay");
+        }
+        
+        // Xóa dữ liệu plates cũ để load màn sạch
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.Plates.Clear();
+            SaveManager.Instance.SaveGame();
+            Debug.Log("[GridManager] Đã xóa plates cũ để replay màn sạch");
+        }
+        
+        // Reset điểm số cho màn mới
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScoreForNewGame();
+            Debug.Log("[GridManager] Đã reset điểm số");
+        }
+        
+        // Đợi 1 frame để đảm bảo tất cả save operations hoàn tất
+        yield return null;
+        
+        // Load lại scene hiện tại
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     private void ShowFloatingScore(string text, Vector3 position)
     {
@@ -829,5 +997,57 @@ public class GridManager : MonoBehaviour
             Debug.Log($"[GridManager] Đã xong 1s, bắt đầu gộp tại [{x}, {z}]");
             CheckAndMergePizza(x, z);
         }
+    }
+    /// <summary>
+    /// HÀM LƯU: Thu thập toàn bộ đĩa bánh đang có trên lưới chuyển thành List để Save
+    /// </summary>
+    // 1. Sửa kiểu trả về của hàm thành List<PizzaPlateSaveData>
+    public List<PizzaPlateSaveData> GetCurrentGridState()
+    {
+        // 2. Sửa kiểu khởi tạo danh sách thành PizzaPlateSaveData
+        List<PizzaPlateSaveData> currentState = new List<PizzaPlateSaveData>();
+
+        for (int x = 0; x < columns; x++)
+        {
+            for (int z = 0; z < rows; z++)
+            {
+                if (gridPlateMatrix[x, z] != null)
+                {
+                    PizzaPlateSaveData data = new PizzaPlateSaveData();
+                    data.X = x;
+                    data.Z = z;
+                    data.Slices = gridPlateMatrix[x, z].GetSlicesOnPlate();
+
+                    currentState.Add(data);
+                }
+            }
+        }
+        return currentState;
+    }
+
+    /// <summary>
+    /// HÀM LOAD: Tái tạo lại các đĩa bánh từ dữ liệu đã lưu
+    /// </summary>
+    public void LoadSavedPlates()
+    {
+        // 1. Tái tạo tất cả đĩa đơn trước
+        foreach (PizzaPlateSaveData plateData in SaveManager.Instance.PlayerData.Plates)
+        {
+            if (plateData.X < 0 || plateData.X >= columns || plateData.Z < 0 || plateData.Z >= rows) continue;
+
+            Vector3 slotPos = gridMatrix[plateData.X, plateData.Z].transform.position;
+
+            GameObject plateObj = GetPlateFromPool(slotPos, Quaternion.identity);
+            plateObj.name = $"Grid_Plate_[{plateData.X},{plateData.Z}]";
+
+            PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
+            if (pizzaPlateScript != null)
+            {
+                pizzaPlateScript.SetupPlate(new List<ToppingType>(plateData.Slices), plateData.X, plateData.Z);
+                gridPlateMatrix[plateData.X, plateData.Z] = pizzaPlateScript;
+            }
+        }
+
+        Debug.Log("<color=green>[GridManager] Đã tải và tái tạo thành công toàn bộ đĩa bánh cũ!</color>");
     }
 }

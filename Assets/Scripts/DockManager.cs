@@ -8,10 +8,18 @@ public class DockManager : MonoBehaviour
     [SerializeField] private Transform[] spawnPoints;      // Mảng chứa 3 vị trí Transform (vị trí 3 ô Dock trên màn hình)
 
     [Header("Current Dock State")]
-    [SerializeField] private PizzaPlate[] dockSlots = new PizzaPlate[3];
+    private GameObject[] dockSlots = new GameObject[3]; // Loại bỏ [SerializeField] để tránh giữ tham chiếu rác từ Inspector
+
+    private void Awake()
+    {
+        Debug.Log("[DockManager] Awake được gọi!");
+        // Luôn khởi tạo mảng trống mới ở đầu game để xóa sạch tham chiếu cũ
+        dockSlots = new GameObject[3];
+    }
 
     void Start()
     {
+        Debug.Log("[DockManager] Start được gọi!");
         // Đầu game chưa có bánh nào (trống hoàn toàn) -> Sẽ sinh đủ 3 đĩa
         SpawnNewPlatesToAllSlots();
     }
@@ -21,11 +29,31 @@ public class DockManager : MonoBehaviour
     /// </summary>
     public PizzaPlate GetPlateAtSlot(int index)
     {
-        if (index >= 0 && index < dockSlots.Length)
+        if (index >= 0 && index < dockSlots.Length && dockSlots[index] != null)
         {
-            return dockSlots[index];
+            PizzaPlate p = dockSlots[index].GetComponent<PizzaPlate>();
+            if (p != null) return p;
         }
         return null;
+    }
+
+    /// <summary>
+    /// Tìm vị trí ô Dock tương ứng với đĩa bánh
+    /// </summary>
+    public int FindDockSlotForPlate(PizzaPlate plate)
+    {
+        if (plate == null) return -1;
+        for (int i = 0; i < dockSlots.Length; i++)
+        {
+            if (dockSlots[i] != null)
+            {
+                if (dockSlots[i] == plate.gameObject || plate.transform.IsChildOf(dockSlots[i].transform))
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     /// <summary>
@@ -45,17 +73,18 @@ public class DockManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Hàm nạp chồng phòng trường hợp script kéo thả truyền vào PizzaPlate thay vì số Index
-    /// </summary>
     public void EmptyDockSlot(PizzaPlate plate)
     {
+        if (plate == null) return;
         for (int i = 0; i < dockSlots.Length; i++)
         {
-            if (dockSlots[i] == plate)
+            if (dockSlots[i] != null)
             {
-                dockSlots[i] = null;
-                break;
+                if (dockSlots[i] == plate.gameObject || plate.transform.IsChildOf(dockSlots[i].transform))
+                {
+                    dockSlots[i] = null;
+                    break;
+                }
             }
         }
 
@@ -70,6 +99,10 @@ public class DockManager : MonoBehaviour
     /// </summary>
     private bool CheckIfDockIsEmpty()
     {
+        if (dockSlots == null || dockSlots.Length == 0)
+        {
+            return true;
+        }
         foreach (var slot in dockSlots)
         {
             if (slot != null)
@@ -85,6 +118,7 @@ public class DockManager : MonoBehaviour
     /// </summary>
     public void SpawnNewPlatesToAllSlots()
     {
+        Debug.Log($"[DockManager] SpawnNewPlatesToAllSlots được gọi! CheckIfDockIsEmpty: {CheckIfDockIsEmpty()}");
         // ====================================================================
         // KHÓA BẢO VỆ QUAN TRỌNG NHẤT:
         // Nếu TRÊN DOCK VẪN CÒN BÁNH (chưa trống hoàn toàn), CẤM KHÔNG CHO SINH LOẠT MỚI!
@@ -103,11 +137,10 @@ public class DockManager : MonoBehaviour
                 continue;
             }
 
-            // 1. Khởi tạo Object đĩa bánh
+            // Khởi tạo Object đĩa bánh đơn
             GameObject plateObj = Instantiate(platePrefab, spawnPoints[i].position, Quaternion.identity, transform);
             plateObj.name = $"Dock_Plate_Slot_[{i}]";
 
-            // 2. Lấy danh sách vị hỗn hợp và setup hiển thị theo logic cũ của bạn
             PizzaPlate pizzaPlateScript = plateObj.GetComponent<PizzaPlate>();
             if (pizzaPlateScript != null)
             {
@@ -115,7 +148,7 @@ public class DockManager : MonoBehaviour
                 pizzaPlateScript.SetupPlate(mixedToppings, -1, -1);
 
                 // Lưu đĩa vào mảng quản lý Dock
-                dockSlots[i] = pizzaPlateScript;
+                dockSlots[i] = plateObj;
             }
         }
         Debug.Log("<color=cyan>[DockManager] Đã dùng hết sạch bánh cũ! Đang hồi đồng loạt một lượt 3 đĩa mới!</color>");

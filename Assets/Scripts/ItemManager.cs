@@ -62,6 +62,13 @@ public class ItemManager : MonoBehaviour
         {
             selectedItem.currentUses--;
             UpdateAllItemUI();
+            
+            // Lưu số lần sử dụng ngay sau khi dùng item
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.SaveItemUsages();
+            }
+            
             ResetItemSelection();
         }
     }

@@ -1,0 +1,13 @@
+{
+  "levelNumber": 12,
+  "targetScore": 1600,
+  "initialPlates": [
+    { "x": 0, "z": 0, "toppings": ["Purple", "Purple", "Green", "Red"] },
+    { "x": 1, "z": 1, "toppings": ["Green", "Green", "Blue"] },
+    { "x": 2, "z": 2, "toppings": ["Blue", "Blue", "Purple"] },
+    { "x": 3, "z": 1, "toppings": ["Red", "Red", "Green"] },
+    { "x": 0, "z": 4, "toppings": ["Purple", "Blue"] },
+    { "x": 2, "z": 4, "toppings": ["Green", "Green", "Red"] },
+    { "x": 1, "z": 5, "toppings": ["Red", "Red"] }
+  ]
+}

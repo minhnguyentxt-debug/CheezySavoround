@@ -1,0 +1,10 @@
+{
+  "levelNumber": 3,
+  "targetScore": 400,
+  "initialPlates": [
+    { "x": 0, "z": 2, "toppings": ["Red", "Red", "Yellow"] },
+    { "x": 1, "z": 2, "toppings": ["Yellow", "Yellow"] },
+    { "x": 2, "z": 2, "toppings": ["Red", "Yellow"] },
+    { "x": 3, "z": 3, "toppings": ["Red", "Red"] }
+  ]
+}

@@ -3,52 +3,20 @@
   "WorkspaceRootPath": "D:\\CheezySavoround\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scripts\\savemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\savemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\dailyrewardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\dailyrewardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\levelcompleteui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\levelcompleteui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\itemslotui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|d:\\cheezysavoround\\assets\\scripts\\inventorymanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\inventorymanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\itemmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\itemmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\scriptableobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\scriptableobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gridslot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gridslot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\scoremanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\scoremanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\scenecontroler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\scenecontroler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gameoverui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameoverui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\floatingtext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\floatingtext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\dockmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\dockmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\interactionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -59,16 +27,48 @@
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\shopmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\pizzaskindata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\pizzaskindata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\inventorymanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\inventorymanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\savemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\savemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gameeventsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameeventsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\itemmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\itemmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\scenecontroler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\scenecontroler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\scoremanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\scoremanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gamedata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gamedata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\uimanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\uimanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\pizzaplate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\pizzaplate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gameenums.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|D:\\CheezySavoround\\assets\\scripts\\dockmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F08CA25-71C5-9963-73D0-DCBCC861EA43}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\dockmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -78,7 +78,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 12,
           "Children": [
             {
               "$type": "Bookmark",
@@ -90,32 +90,164 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
+              "Title": "LevelCompleteUI.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\LevelCompleteUI.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\LevelCompleteUI.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\LevelCompleteUI.cs",
+              "RelativeToolTip": "Assets\\Scripts\\LevelCompleteUI.cs",
+              "ViewState": "AgIAADoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T18:40:58.446Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ItemSlotUI.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ItemSlotUI.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\ItemSlotUI.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ItemSlotUI.cs",
+              "RelativeToolTip": "Assets\\Scripts\\ItemSlotUI.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAAUwCMAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T14:25:01.841Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "InventoryManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\InventoryManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\InventoryManager.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\InventoryManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\InventoryManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAkwEgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T15:49:00.782Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T14:22:54.284Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "GridSlot.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GridSlot.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\GridSlot.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GridSlot.cs",
-              "RelativeToolTip": "Assets\\Scripts\\GridSlot.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "ItemManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ItemManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\ItemManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ItemManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\ItemManager.cs",
+              "ViewState": "AgIAADwAAAAAAAAAAAAAAFYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T14:39:00.567Z"
+              "WhenOpened": "2026-06-11T14:22:08.948Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "ShopManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ShopManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\ShopManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ShopManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\ShopManager.cs",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAuwA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T13:42:18.484Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "GameEventSystem.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameEventSystem.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\GameEventSystem.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GameEventSystem.cs",
+              "RelativeToolTip": "Assets\\Scripts\\GameEventSystem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T13:40:47.487Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "UIManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\UIManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\UIManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\UIManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\UIManager.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAwCAAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T13:03:32.825Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "GameData.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameData.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\GameData.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GameData.cs",
+              "RelativeToolTip": "Assets\\Scripts\\GameData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-10T14:32:46.974Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DailyRewardManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\DailyRewardManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\DailyRewardManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\DailyRewardManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\DailyRewardManager.cs",
+              "ViewState": "AgIAALMAAAAAAAAAAAAuwNYAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-10T14:31:14.436Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SceneControler.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\SceneControler.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\SceneControler.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\SceneControler.cs",
+              "RelativeToolTip": "Assets\\Scripts\\SceneControler.cs",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAAADMAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-10T14:15:37.92Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SaveManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\SaveManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\SaveManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\SaveManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\SaveManager.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAuwFUAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-10T14:15:28.551Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "GridManager.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GridManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\GridManager.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GridManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\GridManager.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAwwEQAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T06:48:12.752Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "PizzaPlate.cs",
+              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\PizzaPlate.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\PizzaPlate.cs",
+              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\PizzaPlate.cs",
+              "RelativeToolTip": "Assets\\Scripts\\PizzaPlate.cs",
+              "ViewState": "AgIAALQAAADAZkYpwy4IwLsAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-09T16:38:45.824Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
               "Title": "GameEnums.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameEnums.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\GameEnums.cs",
@@ -127,152 +259,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ItemSlotUI.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ItemSlotUI.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ItemSlotUI.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ItemSlotUI.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ItemSlotUI.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAAACQAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T13:39:10.536Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ItemManager.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ItemManager.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ItemManager.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ItemManager.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ItemManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADkAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T13:21:59.928Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ScriptableObject.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ScriptableObject.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ScriptableObject.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ScriptableObject.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ScriptableObject.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T13:21:27.665Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "SceneControler.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\SceneControler.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\SceneControler.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\SceneControler.cs",
-              "RelativeToolTip": "Assets\\Scripts\\SceneControler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T13:05:41.426Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "GameOverUI.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameOverUI.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\GameOverUI.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GameOverUI.cs",
-              "RelativeToolTip": "Assets\\Scripts\\GameOverUI.cs",
-              "ViewState": "AgIAADUAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-07T15:43:08.057Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 10,
-              "Title": "FloatingText.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\FloatingText.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\FloatingText.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\FloatingText.cs",
-              "RelativeToolTip": "Assets\\Scripts\\FloatingText.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAowCoAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-06T15:46:16.303Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
               "Title": "ScoreManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ScoreManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\ScoreManager.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ScoreManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\ScoreManager.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAuwCAAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAkwJUAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-06T15:14:44.078Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "ShopManager.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\ShopManager.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ShopManager.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\ShopManager.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ShopManager.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAQwCwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-05T14:21:51.878Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "PizzaSkinData.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\PizzaSkinData.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\PizzaSkinData.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\PizzaSkinData.cs",
-              "RelativeToolTip": "Assets\\Scripts\\PizzaSkinData.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-05T14:21:21.19Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "SaveManager.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\SaveManager.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\SaveManager.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\SaveManager.cs",
-              "RelativeToolTip": "Assets\\Scripts\\SaveManager.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAgwDgAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-05T14:20:11.173Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 16,
-              "Title": "GameData.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GameData.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\GameData.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GameData.cs",
-              "RelativeToolTip": "Assets\\Scripts\\GameData.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-05T14:19:30.017Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "GridManager.cs",
-              "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\GridManager.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\GridManager.cs",
-              "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\GridManager.cs",
-              "RelativeToolTip": "Assets\\Scripts\\GridManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAASAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-30T06:48:12.752Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
               "Title": "DockManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\DockManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\DockManager.cs",
@@ -284,13 +283,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 4,
               "Title": "InteractionManager.cs",
               "DocumentMoniker": "D:\\CheezySavoround\\Assets\\Scripts\\InteractionManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\InteractionManager.cs",
               "ToolTip": "D:\\CheezySavoround\\Assets\\Scripts\\InteractionManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\InteractionManager.cs",
-              "ViewState": "AgIAAIYAAAAAAAAAAAAnwJMAAAAVAAAAAAAAAA==",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAqwBUAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-30T06:47:20.353Z"
             }

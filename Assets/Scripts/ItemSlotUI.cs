@@ -22,7 +22,8 @@ public class ItemSlotUI : MonoBehaviour
     {
         // Tạo bản sao để mỗi ô có bộ đếm riêng, không ảnh hưởng ô khác
         itemData = Instantiate(data);
-        itemData.currentUses = itemData.maxUses;
+        // KHÔNG set currentUses = maxUses ở đây vì nó sẽ ghi đè dữ liệu đã lưu!
+        // InventoryManager sẽ xử lý việc khởi tạo và load giá trị đã lưu
 
         iconImage.sprite = itemData.icon;
         UpdateUI();

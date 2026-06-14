@@ -160,6 +160,20 @@ public class PizzaPlate : MonoBehaviour
     {
         GameEventSystem.OnSkinSelected -= ApplyNewSkinMaterial;
     }
+
+    /// <summary>
+    /// Bật/Tắt hiển thị của mesh đĩa đơn (ví dụ khi nằm trong đĩa đôi)
+    /// </summary>
+    public void SetPlateMeshActive(bool active)
+    {
+        foreach (Transform child in transform)
+        {
+            if (child != null && !child.name.StartsWith("Slice_"))
+            {
+                child.gameObject.SetActive(active);
+            }
+        }
+    }
     /// <summary>
     /// Thêm một lát bánh mới vào danh sách và cập nhật lại hình ảnh trên đĩa.
     /// </summary>
@@ -175,5 +189,16 @@ public class PizzaPlate : MonoBehaviour
     {
         // Renderer plateRenderer = GetComponent<Renderer>();
         // plateRenderer.material = ...
+    }
+    // Giả sử trong PizzaPlate.cs bạn đang lưu danh sách lát bánh bằng biến này:
+    // public List<ToppingType> currentSlices; 
+
+    /// <summary>
+    /// Hàm xuất danh sách các lát bánh hiện có trên đĩa để phục vụ việc Save game
+    /// </summary>
+    public List<ToppingType> GetSlicesOnPlate()
+    {
+        // Bạn hãy đổi 'currentSlices' thành đúng tên biến List lát bánh thực tế trong code của bạn
+        return slices;
     }
 }

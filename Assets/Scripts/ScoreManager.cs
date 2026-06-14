@@ -2,81 +2,207 @@ using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
 {
-    [Header("Current Stats")]
+    public static ScoreManager Instance { get; private set; }
+
+    [Header("Current Stats (Tự động reset khi Replay)")]
     [SerializeField] private int currentScore = 0;
     [SerializeField] private int currentGold = 0;
-    [SerializeField] private int highScore = 0; // Thêm biến lưu điểm cao nhất
 
-    // Key định danh để lưu điểm cao nhất vào PlayerPrefs tạm thời trước khi bạn lên hệ thống JSON
+    [Header("Persistent Stats (Lưu giữ xuyên suốt qua PlayerPrefs)")]
+    [SerializeField] private int highScore = 0;
+    [SerializeField] private int coins = 0; // Tiền tệ để mua đồ trong Shop
+
+    // Biến tạm để theo dõi mốc điểm đã đổi coin trong phiên chơi này
+    private int lastCoinMilestone = 0;
+
+    public int CurrentScore => currentScore;
+    public int CurrentGold => currentGold;
+    public int HighScore => highScore;
+    public int Coins => coins;
+
     private const string HIGH_SCORE_KEY = "PizzaGame_HighScore";
+    private const string COINS_KEY = "PizzaGame_Coins";
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
     private void Start()
     {
-        // 1. Tải điểm cao nhất từ các phiên chơi trước lên
-        LoadHighScore();
+        LoadData();
     }
 
     private void OnEnable()
     {
-        // Đăng ký lắng nghe sự kiện khi có bánh hoàn thành
         GameEventSystem.OnPizzaCompleted += AddRewards;
     }
 
     private void OnDisable()
     {
-        // Hủy đăng ký để tránh tràn bộ nhớ (Memory Leak)
         GameEventSystem.OnPizzaCompleted -= AddRewards;
     }
-    private void Awake()
-    {
-        DontDestroyOnLoad(this.gameObject);
-    }
+
+    // Biến cờ để tránh kích hoạt OnLevelComplete nhiều lần trong cùng một màn
+    private bool levelCompleted = false;
+
     private void AddRewards(ToppingType topping)
     {
-        // 2. Thay đổi logic: Cộng 100 điểm theo yêu cầu mới của bạn (Vàng giữ nguyên +5 hoặc tùy chỉnh)
-        currentScore += 100;
-        currentGold += 5;
+        AddScore(100, 5);
+    }
 
-        // 3. Kiểm tra và cập nhật kỷ lục điểm cao nhất
+    public void AddScore(int scoreAmount, int goldAmount)
+    {
+        currentScore += scoreAmount;
+        currentGold += goldAmount;
+
+        // --- LOGIC ĐỔI COIN TỰ ĐỘNG CỨ MỖI 300 ĐIỂM ---
+        // ĐÃ TẮT: Không thưởng coin theo điểm nữa
+        /*
+        int currentMilestone = currentScore / 300;
+        if (currentMilestone > lastCoinMilestone)
+        {
+            int milestonesGained = currentMilestone - lastCoinMilestone;
+            int coinsToReward = milestonesGained * 5;
+            AddCoins(coinsToReward);
+
+            lastCoinMilestone = currentMilestone;
+            Debug.Log($"[ScoreManager] Chúc mừng! Đạt mốc điểm, nhận được {coinsToReward} Coins!");
+        }
+        */
+
         if (currentScore > highScore)
         {
             highScore = currentScore;
-            SaveHighScore(); // Lưu lại ngay lập tức vào máy
+            SaveHighScore();
         }
 
-        // Phát sự kiện để UI tự động cập nhật theo
-        GameEventSystem.OnScoreChanged?.Invoke(currentScore);
-        GameEventSystem.OnGoldChanged?.Invoke(currentGold);
+        // Cập nhật toàn bộ UI HUD thời gian thực
+        TriggerAllUIEvents();
 
-        // PHÁT THÊM SỰ KIỆN: Báo cho UI biết Điểm cao nhất đã thay đổi để cập nhật lên màn hình
-        // (Bạn nhớ thêm dòng delegate này vào file GameEventSystem.cs của bạn nhé)
-        GameEventSystem.OnHighScoreChanged?.Invoke(highScore);
-
-        Debug.Log($"[ScoreManager] Điểm hiện tại: {currentScore} | Kỷ lục: {highScore} | Vàng: {currentGold}");
-
-        // Kế hoạch Ngày 1 - Ngày 2: Hàm Lưu JSON sẽ được gọi ở đây
-        // SaveDataToJSON(); 
+        // --- CHECK ĐIỀU KIỆN THẮNG MÀN ---
+        if (!levelCompleted && LevelManager.Instance != null)
+        {
+            int target = LevelManager.Instance.TargetScore;
+            if (target > 0 && currentScore >= target)
+            {
+                levelCompleted = true;
+                
+                // THƯỞNG 50 COINS KHI HOÀN THÀNH MÀN
+                AddCoins(50);
+                Debug.Log("[ScoreManager] 🎉 Hoàn thành màn! Nhận được 50 Coins!");
+                
+                Debug.Log($"[ScoreManager] Đạt {currentScore}/{target} điểm – kích hoạt thắng màn!");
+                GameEventSystem.OnLevelComplete?.Invoke();
+            }
+        }
     }
 
-    /// <summary>
-    /// Lưu điểm cao nhất vào bộ nhớ máy (PlayerPrefs)
-    /// </summary>
+    // Hàm cộng coin công khai
+    public void AddCoins(int amount)
+    {
+        coins += amount;
+        SaveCoins();
+        GameEventSystem.OnCoinsChanged?.Invoke(coins);
+    }
+
+    // Hàm trừ coin khi mua đồ ở Shop
+    public bool TrySpendCoins(int amount)
+    {
+        if (coins >= amount)
+        {
+            coins -= amount;
+            SaveCoins();
+            GameEventSystem.OnCoinsChanged?.Invoke(coins);
+            return true;
+        }
+        return false;
+    }
+
+    // --- HÀM BỔ SUNG: SỬA LỖI KHÔNG RESET ĐIỂM KHI BẤM REPLAY ---
+    public void ResetScoreForNewGame()
+    {
+        currentScore = 0;
+        currentGold = 0; // Reset cả vàng về 0 nếu vàng tính theo từng lượt chơi
+        lastCoinMilestone = 0;
+        levelCompleted = false; // Cho phép thắng màn lại ở màn mới
+
+        // Ép các Text UI cập nhật ngay lập tức về mốc số 0 đầu game
+        TriggerAllUIEvents();
+        Debug.Log("[ScoreManager] Đã làm mới điểm số và vàng để bắt đầu ván mới thành công.");
+    }
+
     private void SaveHighScore()
     {
         PlayerPrefs.SetInt(HIGH_SCORE_KEY, highScore);
         PlayerPrefs.Save();
     }
 
-    /// <summary>
-    /// Đọc điểm cao nhất khi vừa vào game, đồng thời bắn sự kiện cập nhật UI đầu game luôn
-    /// </summary>
-    private void LoadHighScore()
+    private void SaveCoins()
+    {
+        PlayerPrefs.SetInt(COINS_KEY, coins);
+        PlayerPrefs.Save();
+        
+        // QUAN TRỌNG: Đồng bộ coins sang SaveManager để lưu persistent
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.coins = coins;
+            SaveManager.Instance.SaveGame();
+        }
+    }
+
+    private void LoadData()
     {
         highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
+        
+        // QUAN TRỌNG: Load coins từ SaveManager (source of truth) thay vì PlayerPrefs
+        if (SaveManager.Instance != null)
+        {
+            coins = SaveManager.Instance.PlayerData.coins;
+            Debug.Log($"[ScoreManager] Đã load {coins} coins từ SaveManager");
+        }
+        else
+        {
+            // Fallback về PlayerPrefs nếu SaveManager chưa sẵn sàng
+            coins = PlayerPrefs.GetInt(COINS_KEY, 0);
+            Debug.Log($"[ScoreManager] Fallback: Load {coins} coins từ PlayerPrefs");
+        }
 
-        // Bắn điểm số ban đầu ra UI khi vừa mở game
+        lastCoinMilestone = currentScore / 300;
+
+        InvokeInitialEvents();
+    }
+    
+    /// <summary>
+    /// Đồng bộ coins từ SaveManager (được gọi bởi SaveManager.LoadGame)
+    /// </summary>
+    public void SyncCoinsFromSave(int savedCoins)
+    {
+        coins = savedCoins;
+        TriggerAllUIEvents();
+        Debug.Log($"[ScoreManager] Đã sync {coins} coins từ SaveManager");
+    }
+
+    public void InvokeInitialEvents()
+    {
+        TriggerAllUIEvents();
+    }
+
+    // Gom nhóm kích hoạt sự kiện để tránh viết lặp đi lặp lại code gán UI
+    private void TriggerAllUIEvents()
+    {
         GameEventSystem.OnScoreChanged?.Invoke(currentScore);
         GameEventSystem.OnGoldChanged?.Invoke(currentGold);
         GameEventSystem.OnHighScoreChanged?.Invoke(highScore);
+        GameEventSystem.OnCoinsChanged?.Invoke(coins);
     }
 }

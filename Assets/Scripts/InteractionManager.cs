@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InteractionManager : MonoBehaviour
 {
@@ -53,18 +54,12 @@ public class InteractionManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 100f))
         {
+            // Kiểm tra xem có trúng PizzaPlate đơn lẻ bình thường không
             PizzaPlate plate = hit.collider.GetComponentInParent<PizzaPlate>();
 
             if (plate != null && plate.CurrentX == -1 && plate.CurrentZ == -1)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    if (dockManager.GetPlateAtSlot(i) == plate)
-                    {
-                        sourceDockSlotIndex = i;
-                        break;
-                    }
-                }
+                sourceDockSlotIndex = dockManager.FindDockSlotForPlate(plate);
 
                 if (sourceDockSlotIndex != -1)
                 {
@@ -72,11 +67,17 @@ public class InteractionManager : MonoBehaviour
                     originalPosition = selectedPlate.transform.position;
                     selectedPlate.transform.position += Vector3.up * liftHeight;
 
-                    // KHẮC PHỤC 1: Tìm và ép biến ghi nhớ Collider ngay từ lúc này
+                    // Phát âm thanh cầm đĩa lên
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayPickupSound();
+                    }
+
+                    // Tắt collider để tránh cản trở raycast
                     cachedPlateCollider = selectedPlate.GetComponentInChildren<Collider>();
                     if (cachedPlateCollider != null)
                     {
-                        cachedPlateCollider.enabled = false; // Tắt đi để tránh cản tia Raycast
+                        cachedPlateCollider.enabled = false;
                     }
                 }
             }
@@ -92,7 +93,10 @@ public class InteractionManager : MonoBehaviour
         if (dragPlane.Raycast(ray, out enter))
         {
             Vector3 hitPoint = ray.GetPoint(enter);
-            selectedPlate.transform.position = hitPoint;
+            if (selectedPlate != null)
+            {
+                selectedPlate.transform.position = hitPoint;
+            }
         }
     }
 
@@ -128,23 +132,30 @@ public class InteractionManager : MonoBehaviour
                     int targetX = int.Parse(slotName.Substring(openBracket + 1, comma - openBracket - 1));
                     int targetZ = int.Parse(slotName.Substring(comma + 1, closeBracket - comma - 1));
 
-                    if (gridManager.CanPlacePlate(targetX, targetZ))
+                    if (selectedPlate != null)
                     {
-                        gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
-
-                        // Kích hoạt kiểm tra gộp bánh (Có khả năng đĩa sẽ bị Destroy tại đây)
-                        gridManager.CheckAndMergePizza(targetX, targetZ);
-
-                        dockManager.EmptyDockSlot(sourceDockSlotIndex);
-                        placementSuccessful = true;
-
-                        // KHẮC PHỤC 2: Kiểm tra xem đĩa bánh có còn sống sót sau Combo không thì mới bật lại Collider
-                        if (selectedPlate != null && cachedPlateCollider != null)
+                        if (gridManager.CanPlacePlate(targetX, targetZ))
                         {
-                            cachedPlateCollider.enabled = true;
-                        }
+                            gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
+                            
+                            // Phát âm thanh đặt đĩa xuống
+                            if (AudioManager.Instance != null)
+                            {
+                                AudioManager.Instance.PlayPlaceSound();
+                            }
+                            
+                            gridManager.CheckAndMergePizza(targetX, targetZ);
 
-                        dockManager.SpawnNewPlatesToAllSlots();
+                            dockManager.EmptyDockSlot(sourceDockSlotIndex);
+                            placementSuccessful = true;
+
+                            if (selectedPlate != null && cachedPlateCollider != null)
+                            {
+                                cachedPlateCollider.enabled = true;
+                            }
+
+                            dockManager.SpawnNewPlatesToAllSlots();
+                        }
                     }
                 }
             }
@@ -153,37 +164,38 @@ public class InteractionManager : MonoBehaviour
         // Trường hợp thả trượt ra ngoài ô lưới
         if (!placementSuccessful)
         {
-            // Bật lại Collider dựa trên biến nhớ tạm (chắc chắn thành công vì đĩa chưa bị hủy)
-            if (cachedPlateCollider != null)
+            if (selectedPlate != null)
             {
-                cachedPlateCollider.enabled = true;
+                if (cachedPlateCollider != null)
+                {
+                    cachedPlateCollider.enabled = true;
+                }
+                StartCoroutine(ReturnToSenderCoroutine(selectedPlate.transform, originalPosition));
             }
-
-            StartCoroutine(ReturnToSenderCoroutine(selectedPlate, originalPosition));
         }
 
-        // KHẮC PHỤC NGOẠI LỆ: Ép giải phóng bộ nhớ sạch sẽ dù bất kỳ kịch bản nào xảy ra
+        // Giải phóng biến tạm sạch sẽ
         selectedPlate = null;
         cachedPlateCollider = null;
         sourceDockSlotIndex = -1;
     }
 
-    private System.Collections.IEnumerator ReturnToSenderCoroutine(PizzaPlate plate, Vector3 targetPos)
+    private System.Collections.IEnumerator ReturnToSenderCoroutine(Transform targetTransform, Vector3 targetPos)
     {
-        if (plate == null) yield break;
+        if (targetTransform == null) yield break;
 
         float elapsed = 0f;
         float duration = 0.15f;
-        Vector3 startPos = plate.transform.position;
+        Vector3 startPos = targetTransform.position;
 
         while (elapsed < duration)
         {
-            if (plate == null) yield break; // Phòng thủ nếu đĩa bị hủy đột ngột lúc đang bay
+            if (targetTransform == null) yield break;
             elapsed += Time.deltaTime;
-            plate.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            targetTransform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
             yield return null;
         }
 
-        if (plate != null) plate.transform.position = targetPos;
+        if (targetTransform != null) targetTransform.position = targetPos;
     }
 }
