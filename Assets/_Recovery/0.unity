@@ -344,6 +344,10 @@ MonoBehaviour:
   darkSlotColor: {r: 1, g: 0.71112597, b: 0.216981, a: 1}
   slotPrefab: {fileID: 4009258313845728007, guid: c1e5fb60c5bb22b4986927621562a710, type: 3}
   platePrefab: {fileID: 8871807510494230036, guid: b45fdb94c8593d343afb01967c1d1151, type: 3}
+  floatingTextPrefab: {fileID: 0}
+  gameOverPanel: {fileID: 0}
+  initialPoolSize: 10
+  pizzaSlicePrefabs: []
 --- !u!4 &403952005
 Transform:
   m_ObjectHideFlags: 0
@@ -726,10 +730,6 @@ MonoBehaviour:
   - {fileID: 832657019}
   - {fileID: 927509098}
   - {fileID: 1585404120}
-  dockSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!4 &1475491423
 Transform:
   m_ObjectHideFlags: 0

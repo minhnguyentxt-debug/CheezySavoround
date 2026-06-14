@@ -66,6 +66,8 @@ public class ScoreManager : MonoBehaviour
         currentGold += goldAmount;
 
         // --- LOGIC ĐỔI COIN TỰ ĐỘNG CỨ MỖI 300 ĐIỂM ---
+        // ĐÃ TẮT: Không thưởng coin theo điểm nữa
+        /*
         int currentMilestone = currentScore / 300;
         if (currentMilestone > lastCoinMilestone)
         {
@@ -76,6 +78,7 @@ public class ScoreManager : MonoBehaviour
             lastCoinMilestone = currentMilestone;
             Debug.Log($"[ScoreManager] Chúc mừng! Đạt mốc điểm, nhận được {coinsToReward} Coins!");
         }
+        */
 
         if (currentScore > highScore)
         {
@@ -93,6 +96,11 @@ public class ScoreManager : MonoBehaviour
             if (target > 0 && currentScore >= target)
             {
                 levelCompleted = true;
+                
+                // THƯỞNG 50 COINS KHI HOÀN THÀNH MÀN
+                AddCoins(50);
+                Debug.Log("[ScoreManager] 🎉 Hoàn thành màn! Nhận được 50 Coins!");
+                
                 Debug.Log($"[ScoreManager] Đạt {currentScore}/{target} điểm – kích hoạt thắng màn!");
                 GameEventSystem.OnLevelComplete?.Invoke();
             }
@@ -143,16 +151,45 @@ public class ScoreManager : MonoBehaviour
     {
         PlayerPrefs.SetInt(COINS_KEY, coins);
         PlayerPrefs.Save();
+        
+        // QUAN TRỌNG: Đồng bộ coins sang SaveManager để lưu persistent
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.coins = coins;
+            SaveManager.Instance.SaveGame();
+        }
     }
 
     private void LoadData()
     {
         highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
-        coins = PlayerPrefs.GetInt(COINS_KEY, 0);
+        
+        // QUAN TRỌNG: Load coins từ SaveManager (source of truth) thay vì PlayerPrefs
+        if (SaveManager.Instance != null)
+        {
+            coins = SaveManager.Instance.PlayerData.coins;
+            Debug.Log($"[ScoreManager] Đã load {coins} coins từ SaveManager");
+        }
+        else
+        {
+            // Fallback về PlayerPrefs nếu SaveManager chưa sẵn sàng
+            coins = PlayerPrefs.GetInt(COINS_KEY, 0);
+            Debug.Log($"[ScoreManager] Fallback: Load {coins} coins từ PlayerPrefs");
+        }
 
         lastCoinMilestone = currentScore / 300;
 
         InvokeInitialEvents();
+    }
+    
+    /// <summary>
+    /// Đồng bộ coins từ SaveManager (được gọi bởi SaveManager.LoadGame)
+    /// </summary>
+    public void SyncCoinsFromSave(int savedCoins)
+    {
+        coins = savedCoins;
+        TriggerAllUIEvents();
+        Debug.Log($"[ScoreManager] Đã sync {coins} coins từ SaveManager");
     }
 
     public void InvokeInitialEvents()

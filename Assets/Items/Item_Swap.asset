@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 559862a7b706ca24e986d2e9b268e601, type: 3}
   m_Name: Item_Swap
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: 
+  itemName: Swap
   icon: {fileID: -1648969422, guid: ed6a91ce8e241b3468e38f52cf32e3f9, type: 3}
   effectType: 2
-  valueChange: 0
+  maxUses: 3
+  currentUses: 0

@@ -67,6 +67,12 @@ public class InteractionManager : MonoBehaviour
                     originalPosition = selectedPlate.transform.position;
                     selectedPlate.transform.position += Vector3.up * liftHeight;
 
+                    // Phát âm thanh cầm đĩa lên
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayPickupSound();
+                    }
+
                     // Tắt collider để tránh cản trở raycast
                     cachedPlateCollider = selectedPlate.GetComponentInChildren<Collider>();
                     if (cachedPlateCollider != null)
@@ -131,6 +137,13 @@ public class InteractionManager : MonoBehaviour
                         if (gridManager.CanPlacePlate(targetX, targetZ))
                         {
                             gridManager.AddPlateToGrid(selectedPlate, targetX, targetZ);
+                            
+                            // Phát âm thanh đặt đĩa xuống
+                            if (AudioManager.Instance != null)
+                            {
+                                AudioManager.Instance.PlayPlaceSound();
+                            }
+                            
                             gridManager.CheckAndMergePizza(targetX, targetZ);
 
                             dockManager.EmptyDockSlot(sourceDockSlotIndex);

@@ -45,6 +45,7 @@ public class ShopManager : MonoBehaviour
             }
         }
 
+        // Cập nhật UI ngay khi Start để hiển thị đúng số coin
         UpdateShopUI();
         InitItemPrices();
     }
@@ -133,7 +134,9 @@ public class ShopManager : MonoBehaviour
 
             if (isActive)
             {
+                // QUAN TRỌNG: Cập nhật UI mỗi khi mở shop để đảm bảo hiển thị đúng số coin
                 UpdateShopUI();
+                CheckButtonInteractable();
                 // Nếu ở scene Gameplay, bạn có thể cân nhắc Pause game khi mở shop bằng dòng dưới:
                 Time.timeScale = 0f;
             }

@@ -472,6 +472,12 @@ public class GridManager : MonoBehaviour
                                         targetSlices.RemoveAt(i);
 
                                         StartCoroutine(AnimateSliceTransferCoroutine(targetPlate.transform.position, destPlate.transform.position, outcast, destPlate));
+                                        
+                                        // Phát âm thanh gộp bánh
+                                        if (AudioManager.Instance != null)
+                                        {
+                                            AudioManager.Instance.PlayMergeSound();
+                                        }
 
                                         destPlate.UpdateVisuals();
                                         CheckAndExecuteCombo(dest.x, dest.y);
@@ -521,6 +527,12 @@ public class GridManager : MonoBehaviour
                                     targetPlateChanged = true;
 
                                     StartCoroutine(AnimateSliceTransferCoroutine(neighborPlate.transform.position, targetPlate.transform.position, topping, targetPlate));
+                                    
+                                    // Phát âm thanh gộp bánh
+                                    if (AudioManager.Instance != null)
+                                    {
+                                        AudioManager.Instance.PlayMergeSound();
+                                    }
 
                                     if (!alreadyInQueue.Contains(neighborCell))
                                     {
@@ -830,8 +842,40 @@ public class GridManager : MonoBehaviour
     // Hàm gắn vào Button Replay
     public void ReplayGame()
     {
+        StartCoroutine(ReplayGameCoroutine());
+    }
+    
+    private IEnumerator ReplayGameCoroutine()
+    {
         Time.timeScale = 1f; // Chạy lại thời gian
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Load lại scene hiện tại
+        
+        // QUAN TRỌNG: Lưu item usages trước khi reload
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.SaveItemUsages();
+            Debug.Log("[GridManager] Đã lưu item usages trước khi replay");
+        }
+        
+        // Xóa dữ liệu plates cũ để load màn sạch
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.PlayerData.Plates.Clear();
+            SaveManager.Instance.SaveGame();
+            Debug.Log("[GridManager] Đã xóa plates cũ để replay màn sạch");
+        }
+        
+        // Reset điểm số cho màn mới
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScoreForNewGame();
+            Debug.Log("[GridManager] Đã reset điểm số");
+        }
+        
+        // Đợi 1 frame để đảm bảo tất cả save operations hoàn tất
+        yield return null;
+        
+        // Load lại scene hiện tại
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     private void ShowFloatingScore(string text, Vector3 position)
     {

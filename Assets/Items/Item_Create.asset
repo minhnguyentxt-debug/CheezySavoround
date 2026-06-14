@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 559862a7b706ca24e986d2e9b268e601, type: 3}
   m_Name: Item_Create
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: 
+  itemName: Create
   icon: {fileID: 1141853448, guid: 2595e22ccd2597940889ffb86cf5d58a, type: 3}
   effectType: 0
-  valueChange: 0
+  maxUses: 3
+  currentUses: 0
